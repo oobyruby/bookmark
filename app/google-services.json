@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "452526992582",
+    "project_id": "bookmark-387d8",
+    "storage_bucket": "bookmark-387d8.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:452526992582:android:c5cd7cc215faec31f07bc7",
+        "android_client_info": {
+          "package_name": "uws.ac.uk.bookmark"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyArzsdFpQqA3gj-FJ059o8ZChOK1CPp1UE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
