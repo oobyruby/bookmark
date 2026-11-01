@@ -1,53 +1,51 @@
 
-<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="55dp"
-    android:background="#BCA9CC"
-    android:gravity="center"
     android:orientation="horizontal"
-    android:paddingStart="8dp"
-    android:paddingEnd="8dp">
+    android:gravity="center"
+    android:background="@color/purple">
 
-    <TextView
-        android:layout_width="0dp"
+    <ImageButton
+        android:id="@+id/homeButton"
+        android:layout_width="55dp"
         android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:gravity="center"
-        android:text="Home"
-        android:textColor="#FFFFFF"
-        android:textSize="13sp"
-        android:textStyle="bold" />
+        android:src="@drawable/home"
+        android:background="@android:color/transparent"
+        android:scaleType="fitCenter"
+        android:padding="13dp"
+        android:contentDescription="Home" />
 
-    <TextView
-        android:layout_width="0dp"
+    <ImageButton
+        android:id="@+id/booksButton"
+        android:layout_width="55dp"
         android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:gravity="center"
-        android:text="Books"
-        android:textColor="#FFFFFF"
-        android:textSize="13sp"
-        android:textStyle="bold" />
+        android:src="@drawable/book"
+        android:background="@android:color/transparent"
+        android:scaleType="fitCenter"
+        android:padding="13dp"
+        android:contentDescription="Books" />
 
-    <TextView
-        android:layout_width="0dp"
+    <ImageButton
+        android:id="@+id/exploreButton"
+        android:layout_width="55dp"
         android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:gravity="center"
-        android:text="Explore"
-        android:textColor="#FFFFFF"
-        android:textSize="13sp"
-        android:textStyle="bold" />
+        android:src="@drawable/map"
+        android:background="@android:color/transparent"
+        android:scaleType="fitCenter"
+        android:padding="13dp"
+        android:contentDescription="Explore" />
 
-    <TextView
-        android:layout_width="0dp"
+    <ImageButton
+        android:id="@+id/profileButton"
+        android:layout_width="55dp"
         android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:gravity="center"
-        android:text="Profile"
-        android:textColor="#FFFFFF"
-        android:textSize="13sp"
-        android:textStyle="bold" />
+        android:src="@drawable/profile"
+        android:background="@android:color/transparent"
+        android:scaleType="fitCenter"
+        android:padding="13dp"
+        android:contentDescription="Profile" />
 
 </LinearLayout>
+
