@@ -135,6 +135,8 @@
     </ScrollView>
 
     <!-- shared bottom navigation -->
-    <include layout="@layout/bottom_navigation" />
+    <include layout="@layout/bottom_navigation"
+     android:layout_width="match_parent"
+    android:layout_height="55dp"/>
 
 </LinearLayout>
