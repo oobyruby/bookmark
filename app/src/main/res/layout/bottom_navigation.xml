@@ -1,51 +1,49 @@
-
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="55dp"
     android:orientation="horizontal"
     android:gravity="center"
-    android:background="@color/purple">
+    android:background="@color/bottom_purple">
 
     <ImageButton
-        android:id="@+id/homeButton"
+        android:id="@+id/navHome"
         android:layout_width="55dp"
         android:layout_height="match_parent"
-        android:src="@drawable/home"
+        android:src="@drawable/ic_home"
         android:background="@android:color/transparent"
         android:scaleType="fitCenter"
         android:padding="13dp"
         android:contentDescription="Home" />
 
     <ImageButton
-        android:id="@+id/booksButton"
+        android:id="@+id/navExplore"
         android:layout_width="55dp"
         android:layout_height="match_parent"
-        android:src="@drawable/book"
+        android:src="@drawable/ic_book"
         android:background="@android:color/transparent"
         android:scaleType="fitCenter"
         android:padding="13dp"
         android:contentDescription="Books" />
 
     <ImageButton
-        android:id="@+id/exploreButton"
+        android:id="@+id/navMap"
         android:layout_width="55dp"
         android:layout_height="match_parent"
-        android:src="@drawable/map"
+        android:src="@drawable/ic_map"
         android:background="@android:color/transparent"
         android:scaleType="fitCenter"
         android:padding="13dp"
         android:contentDescription="Explore" />
 
     <ImageButton
-        android:id="@+id/profileButton"
+        android:id="@+id/navProfile"
         android:layout_width="55dp"
         android:layout_height="match_parent"
-        android:src="@drawable/profile"
+        android:src="@drawable/ic_profile"
         android:background="@android:color/transparent"
         android:scaleType="fitCenter"
         android:padding="13dp"
         android:contentDescription="Profile" />
 
 </LinearLayout>
-
