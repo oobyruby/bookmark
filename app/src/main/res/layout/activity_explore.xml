@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="#FFFFFF">
 
-    <!-- top navigation bar with the page title and search -->
+    <!-- Top navigation bar with page title and search -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -19,19 +20,19 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="explore"
+            android:text="@string/explore_title"
             android:textColor="#FFFFFF"
             android:textSize="18sp"
             android:gravity="center"
             android:layout_marginBottom="6dp" />
 
-        <!-- search field -->
+        <!-- Search field -->
         <EditText
             android:id="@+id/searchBar"
             android:layout_width="match_parent"
             android:layout_height="32dp"
             android:background="@drawable/search_bar_background"
-            android:hint="search books, author, genre..."
+            android:hint="@string/explore_search_hint"
             android:textColor="#333333"
             android:textColorHint="#88818D"
             android:textSize="10sp"
@@ -43,9 +44,10 @@
             android:importantForAutofill="no"
             android:drawableStart="@drawable/ic_search"
             android:drawablePadding="4dp" />
+
     </LinearLayout>
 
-    <!-- scrollable explore page content -->
+    <!-- Scrollable Explore page -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -58,86 +60,119 @@
             android:orientation="vertical"
             android:padding="12dp">
 
-            <!-- popular reading lists heading -->
+            <!-- Popular Lists heading -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="popular lists"
+                android:text="@string/explore_popular_lists"
                 android:textColor="#333333"
                 android:textSize="14sp"
                 android:layout_marginTop="12dp"
                 android:layout_marginBottom="10dp" />
 
-            <!-- popular reading list cards -->
+            <!-- Popular Lists image cards -->
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="100dp"
+                android:layout_height="110dp"
                 android:orientation="horizontal"
                 android:weightSum="3">
 
-                <!-- first popular list -->
-                <LinearLayout
+                <!-- Most Read This Month -->
+                <FrameLayout
+                    android:id="@+id/popularMostRead"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:layout_marginEnd="4dp"
-                    android:orientation="vertical"
-                    android:gravity="center"
-                    android:background="#E5D8E9"
-                    android:padding="6dp">
+                    android:background="@drawable/genre_tile_background"
+                    android:clipToOutline="true">
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:src="@drawable/mostreadthismonth"
+                        android:scaleType="centerCrop"
+                        android:contentDescription="@string/most_read_image_description" />
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="most read\nthis month"
+                        android:layout_gravity="bottom"
+                        android:layout_margin="5dp"
+                        android:background="#DDEDE5F0"
+                        android:padding="4dp"
+                        android:text="@string/explore_most_read"
                         android:textColor="#493C50"
                         android:textSize="10sp"
                         android:gravity="center" />
-                </LinearLayout>
 
-                <!-- second popular list -->
-                <LinearLayout
+                </FrameLayout>
+
+                <!-- BookTok Favourites -->
+                <FrameLayout
+                    android:id="@+id/popularBookTok"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:layout_marginHorizontal="2dp"
-                    android:orientation="vertical"
-                    android:gravity="center"
-                    android:background="#D8C5DF"
-                    android:padding="6dp">
+                    android:background="@drawable/genre_tile_background"
+                    android:clipToOutline="true">
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:src="@drawable/booktokfavourites"
+                        android:scaleType="centerCrop"
+                        android:contentDescription="@string/booktok_image_description" />
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="booktok\nfavourites"
+                        android:layout_gravity="bottom"
+                        android:layout_margin="5dp"
+                        android:background="#DDEDE5F0"
+                        android:padding="4dp"
+                        android:text="@string/explore_booktok"
                         android:textColor="#493C50"
                         android:textSize="10sp"
                         android:gravity="center" />
-                </LinearLayout>
 
-                <!-- third popular list -->
-                <LinearLayout
+                </FrameLayout>
+
+                <!-- Award Winners -->
+                <FrameLayout
+                    android:id="@+id/popularAwardWinners"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:layout_marginStart="4dp"
-                    android:orientation="vertical"
-                    android:gravity="center"
-                    android:background="#E5D8E9"
-                    android:padding="6dp">
+                    android:background="@drawable/genre_tile_background"
+                    android:clipToOutline="true">
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:src="@drawable/awardwinners"
+                        android:scaleType="centerCrop"
+                        android:contentDescription="@string/award_winners_image_description" />
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="award\nwinners"
+                        android:layout_gravity="bottom"
+                        android:layout_margin="5dp"
+                        android:background="#DDEDE5F0"
+                        android:padding="4dp"
+                        android:text="@string/explore_award_winners"
                         android:textColor="#493C50"
                         android:textSize="10sp"
                         android:gravity="center" />
-                </LinearLayout>
+
+                </FrameLayout>
 
             </LinearLayout>
 
-            <!-- browse by genre heading -->
+            <!-- Browse by Genre heading -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -150,121 +185,316 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="browse by genre"
+                    android:text="@string/explore_browse_genre"
                     android:textColor="#333333"
                     android:textSize="14sp" />
 
+                <!-- See all genres button -->
                 <TextView
+                    android:id="@+id/seeAllGenres"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="see all ›"
+                    android:text="@string/explore_see_all"
                     android:textColor="#666666"
-                    android:textSize="10sp" />
+                    android:textSize="10sp"
+                    android:padding="6dp"
+                    android:clickable="true"
+                    android:focusable="true" />
+
             </LinearLayout>
 
-
-            <!-- empty genre grid -->
+            <!-- Genre grid -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:layout_marginTop="12dp">
 
-                <!-- first row -->
+                <!-- First row -->
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="76dp"
+                    android:layout_height="96dp"
                     android:orientation="horizontal"
                     android:layout_marginBottom="10dp">
 
-                    <View
+                    <!-- Romance -->
+                    <LinearLayout
+                        android:id="@+id/genreRomance"
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:layout_weight="1"
                         android:layout_marginEnd="6dp"
-                        android:background="@drawable/genre_tile_background" />
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:background="@drawable/genre_tile_background">
 
-                    <View
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/icon_romance"
+                            android:textColor="#FFFFFF"
+                            android:textSize="36sp"
+                            android:gravity="center" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/genre_romance"
+                            android:textColor="#FFFFFF"
+                            android:textSize="11sp" />
+
+                    </LinearLayout>
+
+                    <!-- Fantasy -->
+                    <LinearLayout
+                        android:id="@+id/genreFantasy"
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:layout_weight="1"
                         android:layout_marginHorizontal="3dp"
-                        android:background="@drawable/genre_tile_background" />
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:background="@drawable/genre_tile_background">
 
-                    <View
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/icon_fantasy"
+                            android:textColor="#FFFFFF"
+                            android:textSize="34sp"
+                            android:gravity="center" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/genre_fantasy"
+                            android:textColor="#FFFFFF"
+                            android:textSize="11sp" />
+
+                    </LinearLayout>
+
+                    <!-- Thriller -->
+                    <LinearLayout
+                        android:id="@+id/genreThriller"
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:layout_weight="1"
                         android:layout_marginStart="6dp"
-                        android:background="@drawable/genre_tile_background" />
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:background="@drawable/genre_tile_background">
+
+                        <androidx.appcompat.widget.AppCompatImageView
+                            android:layout_width="34dp"
+                            android:layout_height="34dp"
+                            android:layout_marginBottom="4dp"
+                            android:src="@drawable/ic_search"
+                            app:tint="#FFFFFF"
+                            android:contentDescription="@string/thriller_icon_description" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/genre_thriller"
+                            android:textColor="#FFFFFF"
+                            android:textSize="11sp" />
+
+                    </LinearLayout>
 
                 </LinearLayout>
 
-                <!-- second row -->
+                <!-- Second row -->
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="76dp"
+                    android:layout_height="96dp"
                     android:orientation="horizontal"
                     android:layout_marginBottom="10dp">
 
-                    <View
+                    <!-- Young Adult -->
+                    <LinearLayout
+                        android:id="@+id/genreYoungAdult"
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:layout_weight="1"
                         android:layout_marginEnd="6dp"
-                        android:background="@drawable/genre_tile_background" />
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:background="@drawable/genre_tile_background">
 
-                    <View
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/icon_young_adult"
+                            android:textColor="#FFFFFF"
+                            android:textSize="34sp"
+                            android:gravity="center" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/genre_young_adult"
+                            android:textColor="#FFFFFF"
+                            android:textSize="11sp" />
+
+                    </LinearLayout>
+
+                    <!-- Non-fiction -->
+                    <LinearLayout
+                        android:id="@+id/genreNonFiction"
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:layout_weight="1"
                         android:layout_marginHorizontal="3dp"
-                        android:background="@drawable/genre_tile_background" />
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:background="@drawable/genre_tile_background">
 
-                    <View
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/icon_nonfiction"
+                            android:textColor="#FFFFFF"
+                            android:textSize="34sp"
+                            android:gravity="center" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/genre_nonfiction"
+                            android:textColor="#FFFFFF"
+                            android:textSize="11sp" />
+
+                    </LinearLayout>
+
+                    <!-- Contemporary -->
+                    <LinearLayout
+                        android:id="@+id/genreContemporary"
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:layout_weight="1"
                         android:layout_marginStart="6dp"
-                        android:background="@drawable/genre_tile_background" />
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:background="@drawable/genre_tile_background">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/icon_contemporary"
+                            android:textColor="#FFFFFF"
+                            android:textSize="34sp"
+                            android:gravity="center" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/genre_contemporary"
+                            android:textColor="#FFFFFF"
+                            android:textSize="10sp" />
+
+                    </LinearLayout>
 
                 </LinearLayout>
 
-                <!-- third row -->
+                <!-- Third row -->
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="76dp"
+                    android:layout_height="96dp"
                     android:orientation="horizontal">
 
-                    <View
+                    <!-- Horror -->
+                    <LinearLayout
+                        android:id="@+id/genreHorror"
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:layout_weight="1"
                         android:layout_marginEnd="6dp"
-                        android:background="@drawable/genre_tile_background" />
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:background="@drawable/genre_tile_background">
 
-                    <View
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/icon_horror"
+                            android:textColor="#FFFFFF"
+                            android:textSize="34sp"
+                            android:gravity="center" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/genre_horror"
+                            android:textColor="#FFFFFF"
+                            android:textSize="11sp" />
+
+                    </LinearLayout>
+
+                    <!-- Science -->
+                    <LinearLayout
+                        android:id="@+id/genreScience"
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:layout_weight="1"
                         android:layout_marginHorizontal="3dp"
-                        android:background="@drawable/genre_tile_background" />
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:background="@drawable/genre_tile_background">
 
-                    <View
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/icon_science"
+                            android:textColor="#FFFFFF"
+                            android:textSize="34sp"
+                            android:gravity="center" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/genre_science"
+                            android:textColor="#FFFFFF"
+                            android:textSize="11sp" />
+
+                    </LinearLayout>
+
+                    <!-- Comics -->
+                    <LinearLayout
+                        android:id="@+id/genreComics"
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:layout_weight="1"
                         android:layout_marginStart="6dp"
-                        android:background="@drawable/genre_tile_background" />
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:background="@drawable/genre_tile_background">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/icon_comics"
+                            android:textColor="#FFFFFF"
+                            android:textSize="34sp"
+                            android:gravity="center" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/genre_comics"
+                            android:textColor="#FFFFFF"
+                            android:textSize="11sp" />
+
+                    </LinearLayout>
 
                 </LinearLayout>
 
             </LinearLayout>
 
         </LinearLayout>
+
     </ScrollView>
 
-    <!-- shared bottom navigation -->
+    <!-- Shared bottom navigation -->
     <include layout="@layout/bottom_navigation" />
 
 </LinearLayout>

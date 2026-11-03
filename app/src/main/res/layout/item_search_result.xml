@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:padding="10dp"
+    android:layout_marginBottom="8dp"
+    android:background="#F5EFF7">
+
+    <!-- Book cover -->
+    <ImageView
+        android:id="@+id/resultBookCover"
+        android:layout_width="68dp"
+        android:layout_height="95dp"
+        android:scaleType="fitCenter"
+        android:contentDescription="@string/book_cover_description" />
+
+    <!-- Book information -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_marginStart="12dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/resultBookTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/search_result_book_title"
+            android:textColor="#333333"
+            android:textStyle="bold"
+            android:textSize="15sp"
+            android:maxLines="2" />
+
+        <TextView
+            android:id="@+id/resultBookAuthors"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:text="@string/search_result_author"
+            android:textColor="#666666"
+            android:textSize="12sp"
+            android:maxLines="2" />
+
+    </LinearLayout>
+
+</LinearLayout>

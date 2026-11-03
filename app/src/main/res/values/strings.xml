@@ -1,3 +1,78 @@
 <resources>
+    <!-- Application name -->
     <string name="app_name">bookmark</string>
+
+    <!-- Explore screen -->
+    <string name="explore_title">explore</string>
+    <string name="explore_search_hint">search books, author, genre…</string>
+    <string name="explore_popular_lists">popular lists</string>
+    <string name="explore_browse_genre">browse by genre</string>
+    <string name="explore_see_all">see all ›</string>
+
+    <!-- Popular Lists -->
+    <string name="explore_most_read">most read\nthis month</string>
+    <string name="explore_booktok">booktok\nfavourites</string>
+    <string name="explore_award_winners">award\nwinners</string>
+
+    <!-- Popular Lists image descriptions -->
+    <string name="most_read_image_description">Most read this month</string>
+    <string name="booktok_image_description">BookTok favourites</string>
+    <string name="award_winners_image_description">Award winners</string>
+
+    <!-- Genre names -->
+    <string name="genre_romance">romance</string>
+    <string name="genre_fantasy">fantasy</string>
+    <string name="genre_thriller">thriller</string>
+    <string name="genre_young_adult">young adult</string>
+    <string name="genre_nonfiction">non-fiction</string>
+    <string name="genre_contemporary">contemporary</string>
+    <string name="genre_horror">horror</string>
+    <string name="genre_science">science</string>
+    <string name="genre_comics">comics</string>
+
+    <!-- Genre symbols -->
+    <string name="icon_romance">♡</string>
+    <string name="icon_fantasy">✦</string>
+    <string name="icon_young_adult">❦</string>
+    <string name="icon_nonfiction">✉</string>
+    <string name="icon_contemporary">▤</string>
+    <string name="icon_horror">☠</string>
+    <string name="icon_science">⚛</string>
+    <string name="icon_comics">✹</string>
+    <string name="thriller_icon_description">Thriller icon</string>
+
+    <!-- Explore search messages and genre selection -->
+    <string name="search_empty_message">Please enter a book title or author</string>
+    <string name="searching_for_message">Searching for: %1$s</string>
+    <string name="explore_all_genres_title">Browse all genres</string>
+    <string name="explore_cancel">Cancel</string>
+
+    <!-- Search Results screen -->
+    <string name="search_results_title">Search results</string>
+    <string name="search_results_for">Results for: %1$s</string>
+    <string name="search_results_loading">Searching for books…</string>
+    <string name="search_results_no_query">No search entered.</string>
+    <string name="search_results_empty">No books found. Try another search.</string>
+    <string name="search_results_count">Found %1$d books</string>
+    <string name="search_results_error">Could not load books: %1$s</string>
+
+    <!-- Individual search results -->
+    <string name="search_result_book_title">Book title</string>
+    <string name="search_result_author">Author name</string>
+    <string name="author_not_available">Author not available</string>
+
+    <!-- Book View screen -->
+    <string name="book_view_header">book details</string>
+    <string name="book_view_title">Book title</string>
+    <string name="book_view_author">Author name</string>
+    <string name="book_view_about">About this book</string>
+    <string name="book_view_description">The description of the selected book will appear here.</string>
+
+    <!-- Book View fallback messages -->
+    <string name="book_title_not_available">Title not available</string>
+    <string name="book_description_not_available">No description available for this book.</string>
+
+    <!-- Book cover accessibility -->
+    <string name="book_cover_description">Book cover</string>
+
 </resources>
