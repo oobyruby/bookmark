@@ -6,5 +6,12 @@
     <color name="bottom_purple">#BFADCC</color>
     <color name="light_purple">#E5D8E9</color>
     <color name="textGrey">#333333</color>
+    <color name="register_background">#E7DAF0</color>
+    <color name="register_input">#F8F3FA</color>
+    <color name="register_icon">#51475E</color>
+    <color name="register_hint">#95869F</color>
+    <color name="register_button">#AD99B8</color>
+    <color name="register_divider">#CDBDD5</color>
+
 
 </resources>

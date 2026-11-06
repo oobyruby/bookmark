@@ -13,15 +13,25 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Bookmark">
 
-        <!-- homepage -->
+        <!-- register screen -->
         <activity
-            android:name=".MainActivity"
+            android:name=".RegisterActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- login screen -->
+        <activity
+            android:name=".LoginActivity"
+            android:exported="false" />
+
+        <!-- homepage -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="false" />
 
         <!-- explore screen -->
         <activity
