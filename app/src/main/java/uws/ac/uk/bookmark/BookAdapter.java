@@ -1,4 +1,3 @@
-
 package uws.ac.uk.bookmark;
 
 import android.view.LayoutInflater;
@@ -13,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 
 import java.util.ArrayList;
+import java.util.Locale;
 
 public class BookAdapter extends RecyclerView.Adapter<BookAdapter.BookViewHolder> {
 
@@ -24,30 +24,52 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.BookViewHolder
 
     @NonNull
     @Override
-    public BookViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        // create the layout for each book
+    public BookViewHolder onCreateViewHolder(
+            @NonNull ViewGroup parent,
+            int viewType) {
+
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_book, parent, false);
+
         return new BookViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull BookViewHolder holder, int position) {
+    public void onBindViewHolder(
+            @NonNull BookViewHolder holder,
+            int position) {
+
         Book book = books.get(position);
 
-        // display the book title and cover
-        holder.bookTitle.setText(book.getTitle());
+        // display book titles in lowercase
+        String title = book.getTitle();
 
-        if (book.getCoverUrl() != null && !book.getCoverUrl().isEmpty()) {
+        holder.bookTitle.setText(
+                title == null
+                        ? ""
+                        : title.toLowerCase(Locale.ROOT)
+        );
+
+        // load book cover
+        String coverUrl = book.getCoverUrl();
+
+        if (coverUrl != null && !coverUrl.isEmpty()) {
+
             Glide.with(holder.itemView.getContext())
-                    .load(book.getCoverUrl())
+                    .load(coverUrl)
                     .centerInside()
                     .placeholder(R.drawable.genre_tile_background)
                     .error(R.drawable.genre_tile_background)
                     .into(holder.bookCover);
+
         } else {
-            Glide.with(holder.itemView.getContext()).clear(holder.bookCover);
-            holder.bookCover.setImageResource(R.drawable.genre_tile_background);
+
+            Glide.with(holder.itemView.getContext())
+                    .clear(holder.bookCover);
+
+            holder.bookCover.setImageResource(
+                    R.drawable.genre_tile_background
+            );
         }
     }
 
@@ -64,7 +86,6 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.BookViewHolder
         BookViewHolder(@NonNull View itemView) {
             super(itemView);
 
-            // connect the views from item_book.xml
             bookCover = itemView.findViewById(R.id.bookCover);
             bookTitle = itemView.findViewById(R.id.bookTitle);
         }

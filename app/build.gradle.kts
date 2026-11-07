@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     id("com.google.gms.google-services")
@@ -11,12 +13,29 @@ android {
         }
     }
 
+    buildFeatures {
+        buildConfig = true
+    }
+
     defaultConfig {
         applicationId = "uws.ac.uk.bookmark"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
+
+
+        val localProperties = Properties()
+        val localPropertiesFile = rootProject.file("local.properties")
+
+        if (localPropertiesFile.exists()) {
+            localPropertiesFile.inputStream().use {
+                localProperties.load(it)
+            }
+        }
+
+        val nytApiKey = localProperties.getProperty("NYT_API_KEY", "")
+        buildConfigField("String", "NYT_API_KEY", "\"$nytApiKey\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

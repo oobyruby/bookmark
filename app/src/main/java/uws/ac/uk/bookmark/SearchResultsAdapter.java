@@ -15,6 +15,9 @@ import com.bumptech.glide.Glide;
 
 import java.util.ArrayList;
 
+import java.util.Locale;
+
+
 public class SearchResultsAdapter
         extends RecyclerView.Adapter<SearchResultsAdapter.BookViewHolder> {
 
@@ -45,7 +48,12 @@ public class SearchResultsAdapter
         Book book = books.get(position);
 
         // Display the book title
-        holder.bookTitle.setText(book.getTitle());
+
+        holder.bookTitle.setText(
+                book.getTitle() == null
+                        ? ""
+                        : book.getTitle().toLowerCase(Locale.ROOT)
+        );
 
         // Display the author
         String authors = book.getAuthors();
