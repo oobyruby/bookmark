@@ -167,9 +167,13 @@ public class ExploreActivity extends AppCompatActivity {
             // Explore is already open
         });
 
-        // Maps navigation
+        // Open Nearby Libraries from Explore
         navMap.setOnClickListener(v -> {
-            // Connect when the map screen exists
+            Intent intent = new Intent(
+                    ExploreActivity.this,
+                    NearbyLibrariesActivity.class
+            );
+            startActivity(intent);
         });
 
         // Profile navigation

@@ -5,6 +5,9 @@ plugins {
     id("com.google.gms.google-services")
 }
 
+// Read the shared Google Maps API key from gradle.properties
+val mapsApiKey = providers.gradleProperty("MAPS_API_KEY").get()
+
 android {
     namespace = "uws.ac.uk.bookmark"
     compileSdk {
@@ -15,6 +18,7 @@ android {
 
     buildFeatures {
         buildConfig = true
+        resValues = true
     }
 
     defaultConfig {
@@ -43,6 +47,10 @@ android {
         buildConfigField("String", "GOOGLE_BOOKS_API_KEY", "\"$googleBooksApiKey\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+// Makes the API key available to Google Maps and Places
+        resValue("string", "google_maps_key", mapsApiKey)
+
     }
 
     buildTypes {
@@ -77,4 +85,11 @@ dependencies {
     implementation("com.google.firebase:firebase-storage")
     implementation("com.github.bumptech.glide:glide:4.16.0")
     implementation("androidx.recyclerview:recyclerview:1.4.0")
+
+// Google Maps - display the map and markers
+    implementation("com.google.android.gms:play-services-maps:20.1.0")
+
+// Google Places - search for nearby libraries and bookshops
+    implementation("com.google.android.libraries.places:places:6.0.2")
+
 }

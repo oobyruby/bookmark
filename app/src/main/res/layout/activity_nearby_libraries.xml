@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#FFFFFF">
+
+    <!-- Page heading -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="#BCA9CC"
+        android:padding="14dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/nearby_libraries_title"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp"
+            android:gravity="center" />
+
+    </LinearLayout>
+
+    <!-- Search for nearby libraries and bookshops -->
+    <Button
+        android:id="@+id/findLibrariesButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="12dp"
+        android:text="@string/find_nearby_libraries"
+        android:backgroundTint="#BCA9CC"
+        android:textColor="#FFFFFF" />
+
+    <!-- Search loading indicator -->
+    <ProgressBar
+        android:id="@+id/librariesProgress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:visibility="gone" />
+
+    <!-- Location and search messages -->
+    <TextView
+        android:id="@+id/librariesStatus"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="12dp"
+        android:text="@string/nearby_libraries_initial"
+        android:textColor="#555555"
+        android:textSize="14sp" />
+
+    <!-- Interactive Google Maps -->
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/nearbyMapFragment"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <!-- Scrollable nearby library and bookshop results -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="190dp"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:id="@+id/libraryResults"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="12dp" />
+
+    </ScrollView>
+
+    <!-- Shared bottom navigation -->
+    <include layout="@layout/bottom_navigation" />
+
+</LinearLayout>

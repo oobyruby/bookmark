@@ -16,6 +16,9 @@ import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Locale;
 
+import android.view.inputmethod.EditorInfo;
+import android.widget.EditText;
+
 public class MainActivity extends AppCompatActivity {
 
     private NYTBooksService nytBooksService;
@@ -33,10 +36,60 @@ public class MainActivity extends AppCompatActivity {
         googleBooksService = new GoogleBooksService();
 
         setupNavigation();
+        setupHomeSearch();
         setupSeeAllButtons();
         setupTrendingBooks();
         setupNewReleases();
         setupAllTimeFavourites();
+    }
+
+    // Handle book searches from the Home page
+    private void setupHomeSearch() {
+
+        EditText searchBar = findViewById(R.id.searchBar);
+
+        // Handle the Search button on the keyboard
+        searchBar.setOnEditorActionListener((v, actionId, event) -> {
+
+            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+
+                String query = searchBar.getText().toString().trim();
+
+                if (query.isEmpty()) {
+
+                    Toast.makeText(
+                            MainActivity.this,
+                            getString(R.string.search_empty_message),
+                            Toast.LENGTH_SHORT
+                    ).show();
+
+                } else {
+
+                    Toast.makeText(
+                            MainActivity.this,
+                            getString(R.string.searching_for_message, query),
+                            Toast.LENGTH_SHORT
+                    ).show();
+
+                    // Open Search Results and pass the search query
+                    Intent intent = new Intent(
+                            MainActivity.this,
+                            SearchResultsActivity.class
+                    );
+
+                    intent.putExtra(
+                            SearchResultsActivity.EXTRA_QUERY,
+                            query
+                    );
+
+                    startActivity(intent);
+                }
+
+                return true;
+            }
+
+            return false;
+        });
     }
 
     private void setupNavigation() {
@@ -52,9 +105,12 @@ public class MainActivity extends AppCompatActivity {
         navExplore.setOnClickListener(v ->
                 startActivity(new Intent(this, ExploreActivity.class)));
 
+
         navMap.setOnClickListener(v -> {
-            // connect when map screen exists
+            // opens map screen
+            startActivity(new Intent(this, NearbyLibrariesActivity.class));
         });
+
 
         navProfile.setOnClickListener(v ->
                 startActivity(new Intent(this, ProfileActivity.class)));

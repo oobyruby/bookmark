@@ -135,9 +135,11 @@ public class ProfileActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        // map will be connected when its screen exists
+        // opeens map screen
         navMap.setOnClickListener(v -> {
+            startActivity(new Intent(ProfileActivity.this, NearbyLibrariesActivity.class));
         });
+
 
         // profile is already open
         navProfile.setOnClickListener(v -> {

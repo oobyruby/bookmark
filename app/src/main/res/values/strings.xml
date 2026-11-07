@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Application name -->
     <string name="app_name">bookmark</string>
@@ -53,7 +54,7 @@
     <string name="search_results_loading">Searching for books…</string>
     <string name="search_results_no_query">No search entered.</string>
     <string name="search_results_empty">No books found. Try another search.</string>
-    <string name="search_results_count">Found %1$d books</string>
+    <string name="search_results_count">Books found: %1$d</string>
     <string name="search_results_error">Could not load books: %1$s</string>
 
     <!-- Individual search results -->
@@ -74,5 +75,35 @@
 
     <!-- Book cover accessibility -->
     <string name="book_cover_description">Book cover</string>
+
+    <!-- Nearby Libraries and Bookshops screen -->
+    <string name="nearby_libraries_title">nearby libraries &amp; bookshops</string>
+    <string name="find_nearby_libraries">Find Nearby Libraries &amp; Bookshops</string>
+    <string name="nearby_libraries_initial">Tap the button to find libraries and bookshops within 5 km of your location.</string>
+    <string name="nearby_libraries_locating">Finding your location…</string>
+    <string name="nearby_libraries_searching">Searching for nearby libraries and bookshops…</string>
+    <string name="nearby_libraries_permission">Location permission is needed to find nearby libraries and bookshops.</string>
+    <string name="nearby_libraries_location_error">Could not determine your location. Check Location in your device settings and try again.</string>
+    <string name="nearby_libraries_empty">No libraries or bookshops were found within 5 km.</string>
+
+    <!-- Correct singular and plural nearby place counts -->
+    <plurals name="nearby_libraries_count">
+        <item quantity="one">Found %d nearby place</item>
+        <item quantity="other">Found %d nearby places</item>
+    </plurals>
+
+    <!-- Search and directions messages -->
+    <string name="nearby_libraries_error">Nearby libraries and bookshops search is currently unavailable. Please try again.</string>
+    <string name="nearby_library_distance">Approximately %1$.1f km away · Tap for walking directions</string>
+    <string name="nearby_library_default">Library or bookshop</string>
+    <string name="nearby_libraries_map_error">Could not open directions.</string>
+
+    <!-- Google Maps configuration -->
+    <string name="nearby_libraries_user_location">Your location</string>
+
+    <!-- Google Places categories -->
+    <string name="nearby_place_library">Library</string>
+    <string name="nearby_place_bookshop">Bookshop</string>
+    <string name="nearby_place_directions">Tap for walking directions</string>
 
 </resources>
