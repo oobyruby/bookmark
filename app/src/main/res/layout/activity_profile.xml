@@ -40,23 +40,44 @@
                 android:layout_height="100dp"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="18dp"
-                android:background="@drawable/genre_tile_background" />
+                android:background="@drawable/genre_tile_background">
+
+                <ImageView
+                    android:id="@+id/profileImage"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:contentDescription="Profile picture"
+                    android:scaleType="centerCrop" />
+
+                <ImageButton
+                    android:id="@+id/changeProfilePicture"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_gravity="bottom|end"
+                    android:background="@android:color/transparent"
+                    android:contentDescription="Change profile picture"
+                    android:src="@android:drawable/ic_menu_camera" />
+
+
+            </FrameLayout>
             <TextView
+                android:id="@+id/profileUsername"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:text="lilyreads"
+                android:text="Username"
                 android:textColor="#333333"
                 android:textSize="14sp"
                 android:textStyle="bold"
                 android:layout_marginTop="8dp"
                 android:gravity="center" />
             <TextView
+                android:id="@+id/profileHandle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:gravity="center"
-                android:text="lilyreads"
+                android:text="username"
                 android:textColor="#888888"
                 android:textSize="11sp" />
             <!-- Reading list options -->
@@ -73,7 +94,7 @@
                     android:layout_width="32dp"
                     android:layout_height="35dp"
                     android:contentDescription="currently reading"
-                    android:src="@drawable/ic_book"
+                    android:src="@drawable/openbook"
                     app:tint="#BCA9CC" />
 
                 <TextView
@@ -86,6 +107,7 @@
                     android:textSize="12sp" />
 
                 <TextView
+                    android:id="@+id/currentlyReadingRow"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="›"
@@ -106,7 +128,7 @@
                 <ImageView
                     android:layout_width="32dp"
                     android:layout_height="32dp"
-                    android:src="@drawable/ic_book"
+                    android:src="@drawable/starbook"
                     android:contentDescription="to be read"
                     app:tint="#BCA9CC" />
 
@@ -120,7 +142,7 @@
                     android:textSize="12sp" />
 
                 <TextView
-                    android:layout_width="wrap_content"
+                    android:id="@+id/toBeReadRow"                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="›"
                     android:textColor="#BCA9CC"
@@ -129,14 +151,32 @@
             </LinearLayout>
 
             <!-- Recently read books -->
-            <TextView
+            <!-- Recently read books heading -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
                 android:layout_marginTop="20dp"
-                android:layout_marginBottom="10dp"
-                android:text="latest reads"
-                android:textColor="@color/textGrey"
-                android:textSize="14sp" />
+                android:layout_marginBottom="10dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="latest reads"
+                    android:textColor="@color/textGrey"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/seeAllLatestReads"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="see all >>"
+                    android:textColor="@color/textGrey"
+                    android:textSize="12sp" />
+
+            </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
