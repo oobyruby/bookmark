@@ -2,12 +2,10 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:background="#FFFFFF">
 
-    <!-- current reading header -->
-
+    <!-- Currently Reading header -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="52dp"
@@ -22,24 +20,17 @@
             android:textSize="22sp" />
 
     </LinearLayout>
-    <ScrollView
+
+    <!-- Scrollable book list -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/currentBooksRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:fillViewport="true">
+        android:padding="12dp"
+        android:clipToPadding="false" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:layout_marginBottom="10dp"
-            android:text="temp text"
-            android:textColor="@color/textGrey"
-            android:textSize="14sp" />
-
-
-    </ScrollView>
-
+    <!-- Bottom navigation stays at the bottom -->
     <include layout="@layout/bottom_navigation" />
 
 </LinearLayout>

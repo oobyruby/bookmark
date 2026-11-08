@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:background="#FFFFFF">
 
@@ -22,6 +22,7 @@
 
     </LinearLayout>
 
+    <!-- Scrollable profile content -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -34,7 +35,7 @@
             android:orientation="vertical"
             android:padding="12dp">
 
-            <!-- Profile picture placeholder -->
+            <!-- Profile picture -->
             <FrameLayout
                 android:layout_width="100dp"
                 android:layout_height="100dp"
@@ -58,19 +59,22 @@
                     android:contentDescription="Change profile picture"
                     android:src="@android:drawable/ic_menu_camera" />
 
-
             </FrameLayout>
+
+            <!-- Username -->
             <TextView
                 android:id="@+id/profileUsername"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
+                android:layout_marginTop="8dp"
+                android:gravity="center"
                 android:text="Username"
                 android:textColor="#333333"
                 android:textSize="14sp"
-                android:textStyle="bold"
-                android:layout_marginTop="8dp"
-                android:gravity="center" />
+                android:textStyle="bold" />
+
+            <!-- User handle -->
             <TextView
                 android:id="@+id/profileHandle"
                 android:layout_width="wrap_content"
@@ -80,20 +84,24 @@
                 android:text="username"
                 android:textColor="#888888"
                 android:textSize="11sp" />
-            <!-- Reading list options -->
+
+            <!-- Currently Reading row -->
             <LinearLayout
+                android:id="@+id/currentlyReadingRow"
                 android:layout_width="match_parent"
                 android:layout_height="60dp"
                 android:layout_marginTop="20dp"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
                 android:background="@drawable/profile_list_background"
-                android:padding="8dp">
+                android:padding="8dp"
+                android:clickable="true"
+                android:focusable="true">
 
                 <ImageView
                     android:layout_width="32dp"
                     android:layout_height="35dp"
-                    android:contentDescription="currently reading"
+                    android:contentDescription="Currently reading"
                     android:src="@drawable/openbook"
                     app:tint="#BCA9CC" />
 
@@ -107,7 +115,6 @@
                     android:textSize="12sp" />
 
                 <TextView
-                    android:id="@+id/currentlyReadingRow"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="›"
@@ -116,20 +123,24 @@
 
             </LinearLayout>
 
+            <!-- To Be Read row -->
             <LinearLayout
+                android:id="@+id/toBeReadRow"
                 android:layout_width="match_parent"
                 android:layout_height="60dp"
                 android:layout_marginTop="6dp"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
                 android:background="@drawable/profile_list_background"
-                android:padding="8dp">
+                android:padding="8dp"
+                android:clickable="true"
+                android:focusable="true">
 
                 <ImageView
                     android:layout_width="32dp"
                     android:layout_height="32dp"
                     android:src="@drawable/starbook"
-                    android:contentDescription="to be read"
+                    android:contentDescription="To be read"
                     app:tint="#BCA9CC" />
 
                 <TextView
@@ -142,7 +153,7 @@
                     android:textSize="12sp" />
 
                 <TextView
-                    android:id="@+id/toBeReadRow"                    android:layout_width="wrap_content"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="›"
                     android:textColor="#BCA9CC"
@@ -150,8 +161,7 @@
 
             </LinearLayout>
 
-            <!-- Recently read books -->
-            <!-- Recently read books heading -->
+            <!-- Latest reads heading -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -178,6 +188,7 @@
 
             </LinearLayout>
 
+            <!-- Latest read book placeholders -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="108dp"
@@ -208,7 +219,6 @@
             </LinearLayout>
 
         </LinearLayout>
-
     </ScrollView>
 
     <!-- Shared bottom navigation -->
