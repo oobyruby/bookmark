@@ -7,14 +7,17 @@ public class CurrentBook {
     private String author;
     private String coverUrl;
     private int progress;
+    private String documentId;
 
-    public CurrentBook(String title, String author, String coverUrl, int progress){
+    public CurrentBook( String documentId, String title, String author, String coverUrl, int progress){
+        this.documentId = documentId;
         this.title = title;
         this.author = author;
         this.coverUrl = coverUrl;
         this.progress = progress;
 
     }
+    public String getDocumentId(){return documentId;}
     public String getTitle(){
         return title;
     }
