@@ -105,5 +105,8 @@
     <string name="nearby_place_library">Library</string>
     <string name="nearby_place_bookshop">Bookshop</string>
     <string name="nearby_place_directions">Tap for walking directions</string>
+    <string name="f">°F</string>
+    <string name="c">°C</string>
+    <string name="weather_in_your_location">Weather in your location</string>
 
 </resources>

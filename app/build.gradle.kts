@@ -45,6 +45,9 @@ android {
         // google books api key
         val googleBooksApiKey = localProperties.getProperty("GOOGLE_BOOKS_API_KEY", "")
         buildConfigField("String", "GOOGLE_BOOKS_API_KEY", "\"$googleBooksApiKey\"")
+        // WeatherAPI key
+        val weatherApiKey = localProperties.getProperty("WEATHER_API_KEY", "")
+        buildConfigField("String", "WEATHER_API_KEY", "\"$weatherApiKey\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 

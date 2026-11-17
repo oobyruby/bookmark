@@ -51,6 +51,14 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+// weather api and connection
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import org.json.JSONObject;
+import java.io.IOException;
+
 public class NearbyLibrariesActivity extends AppCompatActivity
         implements OnMapReadyCallback {
 
@@ -66,6 +74,19 @@ public class NearbyLibrariesActivity extends AppCompatActivity
     private ProgressBar librariesProgress;
     private TextView librariesStatus;
     private LinearLayout libraryResults;
+
+    //weather components
+    private TextView weatherLocation;
+    private TextView weatherTemperature;
+    private  Button celsiusButton;
+    private Button fahrenheitButton;
+
+    //store the temperature in Celsius
+    private double temperatureCelsius;
+    private boolean isCelsius = true;
+
+
+
 
     // Android location components
     private LocationManager locationManager;
@@ -115,6 +136,23 @@ public class NearbyLibrariesActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_nearby_libraries);
+
+        // connect the weather views from XML
+        weatherLocation = findViewById(R.id.weatherLocation);
+        weatherTemperature = findViewById(R.id.weatherTemperature);
+        celsiusButton = findViewById(R.id.celsiusButton);
+        fahrenheitButton = findViewById(R.id.fahrenheitButton);
+
+        //switch between Celsius temperature
+        celsiusButton.setOnClickListener(v->{
+            isCelsius = true;
+            weatherTemperature.setText(String.format(java.util.Locale.UK, "% 1f °C", temperatureCelsius));
+        });
+        fahrenheitButton.setOnClickListener(v->{
+            isCelsius = false;
+            weatherTemperature.setText(String.format(java.util.Locale.UK,"%.1f °F",(temperatureCelsius * 9/5)+32));
+        });
+
 
         // Connect Java to the XML layout
         findLibrariesButton =
@@ -181,6 +219,8 @@ public class NearbyLibrariesActivity extends AppCompatActivity
         // Preserve Bookmark bottom navigation
         setupNavigation();
     }
+    // connect the weather views from the XML layout
+
 
     // Called when the Google Map is ready
     @Override
@@ -457,6 +497,11 @@ public class NearbyLibrariesActivity extends AppCompatActivity
 
         // Use the device location as the search centre
         searchCenter = new LatLng(
+                deviceLocation.getLatitude(),
+                deviceLocation.getLongitude()
+        );
+        // Get the weather using the current device location
+        fetchWeather(
                 deviceLocation.getLatitude(),
                 deviceLocation.getLongitude()
         );
@@ -967,5 +1012,79 @@ public class NearbyLibrariesActivity extends AppCompatActivity
         clearLocationRequest();
 
         super.onDestroy();
+    }
+    // get the current weather using the device's coordinates
+    private void fetchWeather(double latitude, double longitude){
+        // run the internet in the background
+        new Thread(()->{
+            HttpURLConnection connection = null;
+
+            try{
+                //build the weather API address
+                String apiKey = BuildConfig.WEATHER_API_KEY;
+
+                // build the API URL using the device coordinates
+                String urlString = "https://api.weatherapi.com/v1/current.json"
+                        + "?key=" + apiKey
+                        + "&q=" + latitude + "," + longitude
+                        + "&aqi=no";
+                //open a connection to Weather API
+                URL url = new URL(urlString);
+                connection = (HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("GET");
+
+                //read the information returned by the api
+
+                BufferedReader reader = new BufferedReader(
+                        new InputStreamReader(connection.getInputStream()));
+                StringBuilder response = new StringBuilder();
+                String line;
+
+                // collect the response one line at a time
+                while ((line = reader.readLine())!= null){
+                    response.append(line);
+                }
+                reader.close();
+
+                //convert the API response into JSON data
+                JSONObject weatherData = new JSONObject(response.toString());
+
+                //get the location name from the response
+                String locationName =weatherData
+                        .getJSONObject("location")
+                        .getString("name");
+                temperatureCelsius = weatherData
+                        .getJSONObject("current")
+                        .getDouble("temp_c");
+                //update the weather display on the main UI thread
+                runOnUiThread(() -> {
+
+                    // show the location
+                    weatherLocation.setText("Weather in " + locationName);
+
+                    if (isCelsius) {
+                        weatherTemperature.setText(String.format(
+                                java.util.Locale.UK, "%.1f °C", temperatureCelsius));
+
+                    } else {
+                        // converts Celsius into Fahrenheit
+                        weatherTemperature.setText(String.format(
+                                java.util.Locale.UK, "%.1f °F",
+                                (temperatureCelsius * 9 / 5) + 32));
+                    }
+                });
+
+            } catch (Exception e) {
+                // records errors if the request fails
+                Log.e("WeatherAPI", "Could not get weather", e);
+
+            } finally {
+                // Close the API connection
+                if (connection != null) {
+                    connection.disconnect();
+                }
+            }
+
+        }).start();
     }
 }

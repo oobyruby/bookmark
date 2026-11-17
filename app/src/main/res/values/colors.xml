@@ -12,6 +12,7 @@
     <color name="register_hint">#95869F</color>
     <color name="register_button">#AD99B8</color>
     <color name="register_divider">#CDBDD5</color>
+    <color name="button">#AD99B8</color>
 
 
 </resources>

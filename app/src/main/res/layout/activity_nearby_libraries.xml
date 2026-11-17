@@ -74,6 +74,58 @@
 
     </ScrollView>
 
+    <!-- Weather section -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="12dp"
+        android:background="#FFFFFF">
+
+        <TextView
+            android:id="@+id/weatherLocation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/weather_in_your_location"
+            android:textColor="@color/textGrey"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/weatherTemperature"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="-- °C"
+            android:textColor="@color/textGrey"
+            android:textSize="26sp"
+            android:paddingTop="6dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/celsiusButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/c"
+                android:backgroundTint="@color/button" />
+
+            <Button
+                android:id="@+id/fahrenheitButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/f"
+                android:backgroundTint="@color/button" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+
     <!-- Shared bottom navigation -->
     <include layout="@layout/bottom_navigation" />
 
