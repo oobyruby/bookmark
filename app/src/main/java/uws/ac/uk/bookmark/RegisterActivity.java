@@ -67,10 +67,10 @@ public class RegisterActivity extends AppCompatActivity {
         // handle registration and navigation
         createAccountButton.setOnClickListener(v -> registerUser());
 
+        // create an account or sign in using google
         googleButton.setOnClickListener(v ->
-                Toast.makeText(this,
-                        "Google registration coming soon",
-                        Toast.LENGTH_SHORT).show());
+                GoogleAuthHelper.signIn(RegisterActivity.this));
+
 
         loginLink.setOnClickListener(v -> {
             startActivity(new Intent(this, LoginActivity.class));

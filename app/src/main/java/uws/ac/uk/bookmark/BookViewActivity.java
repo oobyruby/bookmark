@@ -1,6 +1,9 @@
 package uws.ac.uk.bookmark;
 
 import android.content.Intent;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
+import android.util.Log;
 import android.os.Bundle;
 import android.text.Html;
 import android.widget.ImageButton;
@@ -8,6 +11,14 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.text.TextUtils;
 import android.view.View;
+
+// audio player imports
+import android.media.MediaPlayer;
+import android.os.Handler;
+import android.os.Looper;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.SeekBar;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -26,6 +37,49 @@ import java.util.Locale;
 
 public class BookViewActivity extends AppCompatActivity {
 
+    // monitor ambient lighting on the book details screen
+    private AmbientLightHelper ambientLightHelper;
+    private boolean darkThemeEnabled = false;
+
+    // locally stored narrated synopsis player
+    private MediaPlayer audioPlayer;
+    private SeekBar audioSeekBar;
+    private TextView audioPlayPauseButton;
+    private TextView audioCurrentTime;
+    private TextView audioTotalTime;
+
+    // update the playback progress while the audio is playing
+    private final Handler audioHandler = new Handler(Looper.getMainLooper());
+
+    private final Runnable audioProgressUpdater = new Runnable() {
+        @Override
+        public void run() {
+            if (audioPlayer != null) {
+                try {
+                    int position = audioPlayer.getCurrentPosition();
+
+                    if (audioSeekBar != null) {
+                        audioSeekBar.setProgress(position);
+                    }
+
+                    if (audioCurrentTime != null) {
+                        audioCurrentTime.setText(formatAudioTime(position));
+                    }
+
+                    if (audioPlayer.isPlaying()) {
+                        audioHandler.postDelayed(this, 250);
+                    }
+                } catch (IllegalStateException e) {
+                    android.util.Log.e(
+                            "BookViewActivity",
+                            "Could not update audio progress",
+                            e
+                    );
+                }
+            }
+        }
+    };
+
     // Information passed from the Search Results screen
     public static final String EXTRA_TITLE = "book_title";
     public static final String EXTRA_AUTHORS = "book_authors";
@@ -36,6 +90,21 @@ public class BookViewActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_book_view);
+
+        // initialise the ambient light sensor
+        ambientLightHelper = new AmbientLightHelper(this, lux -> {
+            Log.d("AmbientLight", "Light level: " + lux + " lux");
+
+            if (lux < 30 && !darkThemeEnabled) {
+                applyBookTheme(true);
+            } else if (lux > 150 && darkThemeEnabled) {
+                applyBookTheme(false);
+            }
+        });
+
+        if (!ambientLightHelper.isSensorAvailable()) {
+            Log.d("AmbientLight", "Light sensor not available on this device");
+        }
 
         // Connect Java to the XML layout
         ImageView bookCover = findViewById(R.id.bookCover);
@@ -53,6 +122,14 @@ public class BookViewActivity extends AppCompatActivity {
         String authors = intent.getStringExtra(EXTRA_AUTHORS);
         String coverUrl = intent.getStringExtra(EXTRA_COVER_URL);
         String description = intent.getStringExtra(EXTRA_DESCRIPTION);
+
+        // check whether the selected book has a custom stephen king synopsis
+        String customSynopsis = StephenKingSynopses.getSynopsis(title, authors);
+
+// override the api description for the five selected books
+        if (customSynopsis != null) {
+            description = customSynopsis;
+        }
 
         // Display the book title
         if (title != null && !title.isEmpty()) {
@@ -137,8 +214,12 @@ public class BookViewActivity extends AppCompatActivity {
             finish();
         });
 
+
         // retrieve the book rating from google books
         loadBookRating(title, authors, bookRating);
+
+        // set up the narrated synopsis player for the five selected books
+        setupAudioPlayer(title, authors);
 
         // Bottom navigation
         ImageButton navHome = findViewById(R.id.navHome);
@@ -174,6 +255,212 @@ public class BookViewActivity extends AppCompatActivity {
             );
             startActivity(profileIntent);
         });
+    }
+
+
+    // set up local mp3 playback for the five selected stephen king books
+    private void setupAudioPlayer(String title, String authors) {
+
+        LinearLayout audioContainer =
+                findViewById(R.id.audioPlayerContainer);
+
+        audioSeekBar = findViewById(R.id.audioSeekBar);
+        audioPlayPauseButton = findViewById(R.id.audioPlayPauseButton);
+        audioCurrentTime = findViewById(R.id.audioCurrentTime);
+        audioTotalTime = findViewById(R.id.audioTotalTime);
+
+        // connect the custom audio playback controls
+        TextView rewindButton = findViewById(R.id.audioRewindButton);
+        TextView forwardButton = findViewById(R.id.audioForwardButton);
+
+        // check whether the book has one of the five custom synopses
+        if (StephenKingSynopses.getSynopsis(title, authors) == null) {
+            audioContainer.setVisibility(View.GONE);
+            return;
+        }
+
+        // match the selected book to its locally stored mp3 file
+        int audioResource = getStephenKingAudio(title);
+
+        if (audioResource == 0) {
+            audioContainer.setVisibility(View.GONE);
+            return;
+        }
+
+        try {
+            // create the media player using the selected audio file
+            audioPlayer = MediaPlayer.create(this, audioResource);
+
+            if (audioPlayer == null) {
+                audioContainer.setVisibility(View.GONE);
+                return;
+            }
+
+            audioContainer.setVisibility(View.VISIBLE);
+
+            // display the total audio duration
+            int duration = audioPlayer.getDuration();
+            audioSeekBar.setMax(duration);
+            audioTotalTime.setText(formatAudioTime(duration));
+            audioCurrentTime.setText("0:00");
+
+            // play or pause the narrated synopsis
+            audioPlayPauseButton.setOnClickListener(v -> {
+
+                if (audioPlayer == null) {
+                    return;
+                }
+
+                if (audioPlayer.isPlaying()) {
+                    audioPlayer.pause();
+                    audioPlayPauseButton.setText("play");
+                    audioHandler.removeCallbacks(audioProgressUpdater);
+
+                } else {
+                    audioPlayer.start();
+                    audioPlayPauseButton.setText("pause");
+
+                    audioHandler.removeCallbacks(audioProgressUpdater);
+                    audioHandler.post(audioProgressUpdater);
+                }
+            });
+
+            // rewind the audio by ten seconds
+            rewindButton.setOnClickListener(v -> {
+
+                if (audioPlayer != null) {
+                    int position = Math.max(
+                            0,
+                            audioPlayer.getCurrentPosition() - 10000
+                    );
+
+                    seekAudioTo(position);
+                }
+            });
+
+            // skip forward by ten seconds
+            forwardButton.setOnClickListener(v -> {
+
+                if (audioPlayer != null) {
+                    int position = Math.min(
+                            audioPlayer.getDuration(),
+                            audioPlayer.getCurrentPosition() + 10000
+                    );
+
+                    seekAudioTo(position);
+                }
+            });
+
+            // allow users to drag the playback progress bar
+            audioSeekBar.setOnSeekBarChangeListener(
+                    new SeekBar.OnSeekBarChangeListener() {
+
+                        @Override
+                        public void onProgressChanged(
+                                SeekBar seekBar,
+                                int progress,
+                                boolean fromUser) {
+
+                            if (fromUser) {
+                                audioCurrentTime.setText(
+                                        formatAudioTime(progress)
+                                );
+                            }
+                        }
+
+                        @Override
+                        public void onStartTrackingTouch(SeekBar seekBar) {
+                        }
+
+                        @Override
+                        public void onStopTrackingTouch(SeekBar seekBar) {
+                            seekAudioTo(seekBar.getProgress());
+                        }
+                    }
+            );
+
+            // reset the controls when the narration finishes
+            audioPlayer.setOnCompletionListener(player -> {
+                audioHandler.removeCallbacks(audioProgressUpdater);
+
+                player.seekTo(0);
+                audioSeekBar.setProgress(0);
+                audioCurrentTime.setText("0:00");
+                audioPlayPauseButton.setText("play");
+            });
+
+        } catch (Exception e) {
+            android.util.Log.e(
+                    "BookViewActivity",
+                    "Could not initialise audio player",
+                    e
+            );
+
+            audioHandler.removeCallbacks(audioProgressUpdater);
+
+            if (audioPlayer != null) {
+                audioPlayer.release();
+                audioPlayer = null;
+            }
+
+            audioContainer.setVisibility(View.GONE);
+        }
+    }
+
+    // identify the correct local audio file from the book title
+    private int getStephenKingAudio(String title) {
+
+        if (title == null) {
+            return 0;
+        }
+
+        switch (normalise(title)) {
+
+            case "theshining":
+                return R.raw.the_shining;
+
+            case "it":
+                return R.raw.it;
+
+            case "carrie":
+                return R.raw.carrie;
+
+            case "misery":
+                return R.raw.misery;
+
+            case "petsematary":
+                return R.raw.pet_sematary;
+
+            default:
+                return 0;
+        }
+    }
+
+    // seek to a selected position within the audio
+    private void seekAudioTo(int position) {
+
+        if (audioPlayer == null) {
+            return;
+        }
+
+        audioPlayer.seekTo(position);
+        audioSeekBar.setProgress(position);
+        audioCurrentTime.setText(formatAudioTime(position));
+    }
+
+    // convert playback milliseconds into minutes and seconds
+    private String formatAudioTime(int milliseconds) {
+
+        int totalSeconds = milliseconds / 1000;
+        int minutes = totalSeconds / 60;
+        int seconds = totalSeconds % 60;
+
+        return String.format(
+                Locale.UK,
+                "%d:%02d",
+                minutes,
+                seconds
+        );
     }
 
     // retrieve ratings from the google books api
@@ -327,5 +614,87 @@ public class BookViewActivity extends AppCompatActivity {
                 .replaceAll("\\p{M}", "")
                 .toLowerCase(Locale.ROOT)
                 .replaceAll("[^a-z0-9]", "");
+    }
+
+    // update the book details colours without recreating the activity
+    private void applyBookTheme(boolean dark) {
+        darkThemeEnabled = dark;
+
+        int page = Color.parseColor(dark ? "#211D27" : "#FFFCFE");
+        int panel = Color.parseColor(dark ? "#302938" : "#F4EDF8");
+        int primary = Color.parseColor(dark ? "#F5F0F8" : "#29232C");
+        int secondary = Color.parseColor(dark ? "#D9CCDF" : "#4B4350");
+        int accent = Color.parseColor(dark ? "#C9B1DB" : "#826B94");
+
+        findViewById(R.id.bookViewRoot).setBackgroundColor(page);
+        findViewById(R.id.bookViewContent).setBackgroundColor(page);
+
+        // tint the existing rounded panels rather than replacing their shapes
+        findViewById(R.id.synopsisPanel).setBackgroundTintList(
+                ColorStateList.valueOf(panel));
+        findViewById(R.id.audioPlayerContainer).setBackgroundTintList(
+                ColorStateList.valueOf(panel));
+
+        ((TextView) findViewById(R.id.backButton)).setTextColor(primary);
+        ((TextView) findViewById(R.id.bookTitle)).setTextColor(primary);
+        ((TextView) findViewById(R.id.bookAuthors)).setTextColor(secondary);
+        ((TextView) findViewById(R.id.bookRating)).setTextColor(accent);
+        ((TextView) findViewById(R.id.synopsisHeading)).setTextColor(primary);
+        ((TextView) findViewById(R.id.bookDescription)).setTextColor(secondary);
+        ((TextView) findViewById(R.id.readMoreButton)).setTextColor(accent);
+        ((TextView) findViewById(R.id.audioHeading)).setTextColor(primary);
+        ((TextView) findViewById(R.id.audioSubheading)).setTextColor(accent);
+        ((TextView) findViewById(R.id.audioCurrentTime)).setTextColor(secondary);
+        ((TextView) findViewById(R.id.audioTotalTime)).setTextColor(secondary);
+        ((TextView) findViewById(R.id.audioRewindButton)).setTextColor(accent);
+        ((TextView) findViewById(R.id.audioForwardButton)).setTextColor(accent);
+
+        Log.d("AmbientLight", dark ? "Dark theme enabled" : "Light theme enabled");
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (ambientLightHelper != null) {
+            ambientLightHelper.start();
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        if (ambientLightHelper != null) {
+            ambientLightHelper.stop();
+        }
+        super.onPause();
+    }
+
+    // pause the narration when the book screen is no longer visible
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        audioHandler.removeCallbacks(audioProgressUpdater);
+
+        if (audioPlayer != null && audioPlayer.isPlaying()) {
+            audioPlayer.pause();
+
+            if (audioPlayPauseButton != null) {
+                audioPlayPauseButton.setText("play");
+            }
+        }
+    }
+
+    // release the audio player when the activity is destroyed
+    @Override
+    protected void onDestroy() {
+
+        audioHandler.removeCallbacks(audioProgressUpdater);
+
+        if (audioPlayer != null) {
+            audioPlayer.release();
+            audioPlayer = null;
+        }
+
+        super.onDestroy();
     }
 }

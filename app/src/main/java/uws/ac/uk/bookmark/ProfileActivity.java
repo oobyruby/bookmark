@@ -78,6 +78,46 @@ public class ProfileActivity extends AppCompatActivity {
         storage = FirebaseStorage.getInstance(
                 "gs://bookmark-387d8.firebasestorage.app"
         );
+
+
+        // connect the logout button
+        View logoutButton = findViewById(R.id.logoutButton);
+
+        logoutButton.setOnClickListener(v -> {
+
+            // confirm before signing the user out
+            new AlertDialog.Builder(ProfileActivity.this)
+                    .setTitle("log out")
+                    .setMessage("are you sure you want to log out?")
+                    .setNegativeButton("cancel", null)
+                    .setPositiveButton("log out", (dialog, which) -> {
+
+                        // sign out of firebase
+                        auth.signOut();
+
+                        // clear the google credential selection
+                        GoogleAuthHelper.clearCredentialState(
+                                ProfileActivity.this);
+
+
+                        // return to the login screen
+                        Intent intent = new Intent(
+                                ProfileActivity.this,
+                                LoginActivity.class
+                        );
+
+                        // clear previous screens
+                        intent.setFlags(
+                                Intent.FLAG_ACTIVITY_NEW_TASK |
+                                        Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        );
+
+                        startActivity(intent);
+                        finish();
+                    })
+                    .show();
+        });
+
         //connect the profile picture to the XML layout
         profileImage = findViewById(R.id.profileImage);
         //load the user's profile pictures

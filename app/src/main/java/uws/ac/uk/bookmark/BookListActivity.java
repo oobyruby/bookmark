@@ -102,7 +102,7 @@ public class BookListActivity extends AppCompatActivity {
         addBooks(books);
 
         // initialise the book api services
-        googleBooksService = new GoogleBooksService();
+        googleBooksService = new GoogleBooksService(this);
         nytBooksService = new NYTBooksService();
 
         // load additional books when the button is selected

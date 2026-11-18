@@ -22,6 +22,56 @@
 
     </LinearLayout>
 
+
+    <!-- Profile header -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:background="@color/top_purple">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="profile"
+            android:textColor="#FFFFFF"
+            android:textSize="22sp" />
+
+        <!-- Log out button -->
+        <LinearLayout
+            android:id="@+id/logoutButton"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:layout_gravity="end|center_vertical"
+            android:layout_marginEnd="12dp"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:background="@drawable/logout_button_background"
+            android:clickable="true"
+            android:focusable="true"
+            android:contentDescription="Log out">
+
+            <ImageView
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:src="@drawable/ic_logout"
+                android:contentDescription="@null"
+                app:tint="#80628F" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="5dp"
+                android:text="log out"
+                android:textSize="12sp"
+                android:textColor="#80628F" />
+
+        </LinearLayout>
+
+    </FrameLayout>
+
     <!-- Scrollable profile content -->
     <ScrollView
         android:layout_width="match_parent"

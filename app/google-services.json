@@ -12,7 +12,20 @@
           "package_name": "uws.ac.uk.bookmark"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "452526992582-fg3renposggisu7pm36tamto26gri6n8.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "uws.ac.uk.bookmark",
+            "certificate_hash": "1d7eb2d72596e06a37bf01c28339bf88dfaa77b5"
+          }
+        },
+        {
+          "client_id": "452526992582-tsiv9dvdf9gmrdnha3jddc1bprfr01mv.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyArzsdFpQqA3gj-FJ059o8ZChOK1CPp1UE"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "452526992582-tsiv9dvdf9gmrdnha3jddc1bprfr01mv.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

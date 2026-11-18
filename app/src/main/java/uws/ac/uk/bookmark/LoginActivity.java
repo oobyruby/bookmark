@@ -48,10 +48,9 @@ public class LoginActivity extends AppCompatActivity {
 
         loginButton.setOnClickListener(v -> loginUser());
 
+        // sign in using google
         googleButton.setOnClickListener(v ->
-                Toast.makeText(this,
-                        "Google login coming soon",
-                        Toast.LENGTH_SHORT).show());
+                GoogleAuthHelper.signIn(LoginActivity.this));
 
         registerLink.setOnClickListener(v -> {
             startActivity(new Intent(this, RegisterActivity.class));

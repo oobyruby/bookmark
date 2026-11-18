@@ -1,4 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
+
+<!-- root container for the homepage and loading overlay -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF">
+
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
@@ -143,6 +151,44 @@
                 android:clipToPadding="false"
                 android:overScrollMode="never" />
 
+            <!-- stephen king collection -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="8dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="📚 stephen king collection"
+                    android:textColor="#333333"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/seeAllStephenKing"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="see all ›"
+                    android:textColor="#444444"
+                    android:textSize="10sp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:padding="4dp" />
+
+            </LinearLayout>
+
+            <!-- horizontal list of stephen king books -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/stephenKingRecyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="166dp"
+                android:layout_marginBottom="18dp"
+                android:clipToPadding="false"
+                android:overScrollMode="never" />
+
             <!-- all-time favourites -->
             <LinearLayout
                 android:layout_width="match_parent"
@@ -233,3 +279,56 @@
         android:layout_height="55dp" />
 
 </LinearLayout>
+
+    <!-- loading overlay displayed while the homepage books are retrieved -->
+    <LinearLayout
+        android:id="@+id/homeLoadingOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#FCFAFD"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="24dp"
+        android:visibility="visible">
+
+        <!-- featured game of thrones book cover -->
+        <ImageView
+            android:layout_width="145dp"
+            android:layout_height="215dp"
+            android:src="@drawable/game_of_thrones_cover"
+            android:scaleType="fitCenter"
+            android:contentDescription="a game of thrones book cover" />
+
+        <!-- app title -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="bookmark"
+            android:textColor="#69517D"
+            android:textSize="26sp"
+            android:textStyle="bold" />
+
+        <!-- animated loading indicator -->
+        <ProgressBar
+            android:id="@+id/homeLoadingSpinner"
+            style="?android:attr/progressBarStyle"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_marginTop="20dp"
+            android:indeterminate="true"
+            android:indeterminateTint="#BCA9CC" />
+
+        <!-- loading message -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:text="finding your next read..."
+            android:textColor="#826B94"
+            android:textSize="13sp" />
+
+    </LinearLayout>
+
+</FrameLayout>
+

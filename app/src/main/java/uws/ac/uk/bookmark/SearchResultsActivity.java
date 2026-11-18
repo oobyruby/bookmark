@@ -63,7 +63,7 @@ public class SearchResultsActivity extends AppCompatActivity {
         resultsProgress.setVisibility(View.VISIBLE);
 
         // Request books from the existing Google Books API
-        googleBooksService = new GoogleBooksService();
+        googleBooksService = new GoogleBooksService(this);
 
         googleBooksService.getBooks(
                 query,

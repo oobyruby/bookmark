@@ -37,6 +37,14 @@ public class NYTBooksService {
         );
     }
 
+    // retrieve recent hardcover fiction bestsellers
+    public void getNewReleaseBooks(BooksCallback callback) {
+        getBooksByCategory(
+                "hardcover-fiction",
+                callback
+        );
+    }
+
     // retrieve a selected nyt bestseller category
     public void getBooksByCategory(
             String category,
