@@ -8,9 +8,12 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.Button;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+
+import java.util.Random;
 
 public class ExploreActivity extends AppCompatActivity {
 
@@ -30,6 +33,9 @@ public class ExploreActivity extends AppCompatActivity {
 
         // See All genres button
         TextView seeAllGenres = findViewById(R.id.seeAllGenres);
+
+        // Surprise Me button
+        Button surpriseMeButton = findViewById(R.id.surpriseMeButton);
 
         // Genre tile references
         View genreRomance = findViewById(R.id.genreRomance);
@@ -111,6 +117,34 @@ public class ExploreActivity extends AppCompatActivity {
                     })
                     .setNegativeButton(R.string.explore_cancel, null)
                     .show();
+        });
+
+        // Surprise Me button randomly selects a genre using Lab 3 functionality
+        surpriseMeButton.setOnClickListener(v -> {
+
+            String[] genres = {
+                    "Romance",
+                    "Fantasy",
+                    "Thriller",
+                    "Young Adult",
+                    "Nonfiction",
+                    "Contemporary",
+                    "Horror",
+                    "Science",
+                    "Comics"
+            };
+
+            Random random = new Random();
+            int randomIndex = random.nextInt(genres.length);
+            String randomGenre = genres[randomIndex];
+
+            Toast.makeText(
+                    ExploreActivity.this,
+                    "Surprise genre: " + randomGenre,
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            openGenreSearch(randomGenre);
         });
 
         // Genre tile click listeners

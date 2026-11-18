@@ -11,6 +11,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.text.TextUtils;
 import android.view.View;
+import android.widget.RatingBar;
+import android.widget.Toast;
 
 // audio player imports
 import android.media.MediaPlayer;
@@ -85,6 +87,7 @@ public class BookViewActivity extends AppCompatActivity {
     public static final String EXTRA_AUTHORS = "book_authors";
     public static final String EXTRA_COVER_URL = "book_cover_url";
     public static final String EXTRA_DESCRIPTION = "book_description";
+    public static final String EXTRA_ID = "book_id";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -115,6 +118,12 @@ public class BookViewActivity extends AppCompatActivity {
         TextView bookRating = findViewById(R.id.bookRating);
         TextView backButton = findViewById(R.id.backButton);
 
+        // Connect the reading list and review elements
+        TextView addToShelfButton = findViewById(R.id.addToShelfButton);
+        TextView currentlyReadingButton = findViewById(R.id.currentlyReadingButton);
+        RatingBar bookReviewRating = findViewById(R.id.bookReviewRating);
+        TextView writeReviewButton = findViewById(R.id.writeReviewButton);
+
         // Get the selected book's information
         Intent intent = getIntent();
 
@@ -130,6 +139,17 @@ public class BookViewActivity extends AppCompatActivity {
         if (customSynopsis != null) {
             description = customSynopsis;
         }
+
+        // Retrieve the selected book's ID
+        String bookId = intent.getStringExtra(EXTRA_ID);
+
+        Book selectedBook = new Book(
+                bookId,
+                title,
+                authors,
+                description,
+                coverUrl
+        );
 
         // Display the book title
         if (title != null && !title.isEmpty()) {
@@ -215,6 +235,43 @@ public class BookViewActivity extends AppCompatActivity {
         });
 
 
+        // Add the selected book to the to be read list
+        addToShelfButton.setOnClickListener(v ->
+                addBookToShelf(
+                        selectedBook,
+                        "to be read"
+                ));
+
+        // Add the selected book to the currently reading list
+        currentlyReadingButton.setOnClickListener(v ->
+                addBookToShelf(
+                        selectedBook,
+                        "currently reading"
+                ));
+
+        // Open the review dialog when a star rating is selected
+        bookReviewRating.setOnRatingBarChangeListener(
+                (ratingBar, rating, fromUser) -> {
+
+                    if (fromUser && rating > 0) {
+                        SearchResultsAdapter.showReviewDialog(
+                                ratingBar,
+                                selectedBook,
+                                rating
+                        );
+
+                        ratingBar.setRating(0);
+                    }
+                });
+
+        // Open the review dialog when the write review button is selected
+        writeReviewButton.setOnClickListener(v ->
+                SearchResultsAdapter.showReviewDialog(
+                        v,
+                        selectedBook,
+                        bookReviewRating.getRating()
+                ));
+
         // retrieve the book rating from google books
         loadBookRating(title, authors, bookRating);
 
@@ -255,6 +312,17 @@ public class BookViewActivity extends AppCompatActivity {
             );
             startActivity(profileIntent);
         });
+    }
+
+
+    // Placeholder for connecting reading lists to Firebase :)
+    private void addBookToShelf(Book book, String readingList) {
+
+        Toast.makeText(
+                BookViewActivity.this,
+                readingList + " not connected yet",
+                Toast.LENGTH_SHORT
+        ).show();
     }
 
 

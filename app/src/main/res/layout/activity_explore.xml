@@ -490,6 +490,22 @@
 
             </LinearLayout>
 
+            <!-- Surprise Me button -->
+            <Button
+                android:id="@+id/surpriseMeButton"
+                android:layout_width="200dp"
+                android:layout_height="48dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="12dp"
+                android:background="@drawable/surprise_button_background"
+                android:backgroundTint="@null"
+                app:backgroundTint="@null"
+                android:text="Surprise Me!"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:textAllCaps="false" />
+
         </LinearLayout>
 
     </ScrollView>

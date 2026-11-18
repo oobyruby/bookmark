@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
     android:gravity="center_vertical"
     android:padding="10dp"
     android:layout_marginBottom="8dp"
-    android:background="#F5EFF7">
+    android:background="@drawable/profile_list_background">
 
     <!-- Book cover -->
     <ImageView
@@ -44,6 +45,36 @@
             android:textSize="12sp"
             android:maxLines="2" />
 
+        <!-- Interactive star rating -->
+        <RatingBar
+            android:id="@+id/resultBookRating"
+            style="?android:attr/ratingBarStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:numStars="5"
+            android:stepSize="1"
+            android:rating="0"
+            android:isIndicator="false"
+            android:clickable="true"
+            android:focusable="true"
+            android:progressTint="#AD94C0"
+            android:secondaryProgressTint="#BCA9CC"
+            android:progressBackgroundTint="#E5D8E9"
+            android:contentDescription="Rate book" />
+
     </LinearLayout>
+
+    <!-- Bookmark button -->
+    <ImageButton
+        android:id="@+id/resultBookmark"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:padding="8dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:src="@drawable/bookmark_empty"
+        android:scaleType="fitCenter"
+        app:tint="#BCA9CC"
+        android:contentDescription="Bookmark book" />
 
 </LinearLayout>
