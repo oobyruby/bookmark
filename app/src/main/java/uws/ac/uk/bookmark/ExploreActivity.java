@@ -17,6 +17,9 @@ import java.util.Random;
 
 public class ExploreActivity extends AppCompatActivity {
 
+    public static final String EXTRA_POPULAR_LIST =
+            "uws.ac.uk.bookmark.POPULAR_LIST";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -36,6 +39,11 @@ public class ExploreActivity extends AppCompatActivity {
 
         // Surprise Me button
         Button surpriseMeButton = findViewById(R.id.surpriseMeButton);
+
+        // Popular Lists tile references
+        View popularMostRead = findViewById(R.id.popularMostRead);
+        View popularBookTok = findViewById(R.id.popularBookTok);
+        View popularAwardWinners = findViewById(R.id.popularAwardWinners);
 
         // Genre tile references
         View genreRomance = findViewById(R.id.genreRomance);
@@ -89,8 +97,18 @@ public class ExploreActivity extends AppCompatActivity {
             return false;
         });
 
-        // Popular Lists are currently display-only
-        // Functionality will be added when the reading lists are configured in Firebase
+        // Popular Lists tile click listeners
+        popularMostRead.setOnClickListener(v -> {
+            openPopularList("most_read");
+        });
+
+        popularBookTok.setOnClickListener(v -> {
+            openPopularList("booktok");
+        });
+
+        popularAwardWinners.setOnClickListener(v -> {
+            openPopularList("award_winners");
+        });
 
         // See All button displays the available genres
         seeAllGenres.setOnClickListener(v -> {
@@ -236,6 +254,22 @@ public class ExploreActivity extends AppCompatActivity {
         intent.putExtra(
                 SearchResultsActivity.EXTRA_QUERY,
                 query
+        );
+
+        startActivity(intent);
+    }
+
+    // Open Search Results for the selected popular list
+    private void openPopularList(String popularList) {
+
+        Intent intent = new Intent(
+                ExploreActivity.this,
+                SearchResultsActivity.class
+        );
+
+        intent.putExtra(
+                EXTRA_POPULAR_LIST,
+                popularList
         );
 
         startActivity(intent);

@@ -1,9 +1,9 @@
-
 package uws.ac.uk.bookmark;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.DocumentSnapshot;
 
 import android.content.Intent;
 import android.widget.ImageButton;
@@ -74,21 +74,21 @@ public class ToBeRead extends AppCompatActivity {
         //connect to firebase firestore
         FirebaseFirestore db =FirebaseFirestore.getInstance();
 
+        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+            Toast.makeText(this,
+                    "Please log in first",
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         // Get te id of the currently logged-in user
         String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-
-        //Find the to be reaad list belonging to this user
-        db.collection("readingLists")
-                .whereEqualTo("userId", userId)
-                .whereEqualTo("listType","to_be_read")
-                .get();
-
-                //Run  this if Firestore successfully finds the list
 
         // Find the To Be Read list belonging to this user
         db.collection("readingLists")
                 .whereEqualTo("userId", userId)
                 .whereEqualTo("listType", "to_be_read")
+                .limit(1)
                 .get()
 
                 // Run when Firestore finds the list
@@ -105,6 +105,7 @@ public class ToBeRead extends AppCompatActivity {
                         db.collection("readingEntries")
                                 .whereEqualTo("userId", userId)
                                 .whereEqualTo("listId", listId)
+                                .whereEqualTo("completed", false)
                                 .get()
 
                                 // Run when the books are loaded
@@ -123,23 +124,76 @@ public class ToBeRead extends AppCompatActivity {
                                         // Get the book reference ID
                                         String bookRefId = document.getString("bookRefId");
 
-                                        // Create a book with placeholder details
-                                        CurrentBook book = new CurrentBook(
-                                                document.getId(),
-                                                bookRefId != null
-                                                        ? "Book: " + bookRefId
-                                                        : "Book details coming soon",
-                                                "Author details coming soon",
-                                                "",
-                                                progressPercent
-                                        );
+                                        if (bookRefId == null || bookRefId.trim().isEmpty()
+                                                || bookRefId.contains("/")) {
+                                            continue;
+                                        }
 
-                                        // Add the book to the list
-                                        bookList.add(book);
+                                        // Retrieve the saved book information
+                                        db.collection("bookReferences")
+                                                .document(bookRefId)
+                                                .get()
+                                                .addOnCompleteListener(task -> {
+
+                                                    if (isFinishing() || isDestroyed()) {
+                                                        return;
+                                                    }
+
+                                                    String title = "Book details unavailable";
+                                                    String authors = "Author details unavailable";
+                                                    String coverUrl = "";
+
+                                                    if (task.isSuccessful()) {
+
+                                                        DocumentSnapshot bookReference =
+                                                                task.getResult();
+
+                                                        if (bookReference != null && bookReference.exists()) {
+
+                                                            String savedTitle =
+                                                                    bookReference.getString("title");
+
+                                                            String savedAuthors =
+                                                                    bookReference.getString("authors");
+
+                                                            String savedCover =
+                                                                    bookReference.getString("coverUrl");
+
+                                                            if (savedTitle != null && !savedTitle.isEmpty()) {
+                                                                title = savedTitle;
+                                                            }
+
+                                                            if (savedAuthors != null && !savedAuthors.isEmpty()) {
+                                                                authors = savedAuthors;
+                                                            }
+
+                                                            if (savedCover != null) {
+                                                                coverUrl = savedCover;
+                                                            }
+                                                        }
+                                                    } else {
+                                                        android.util.Log.e(
+                                                                "ToBeRead",
+                                                                "Could not load book details",
+                                                                task.getException());
+                                                    }
+
+                                                    // Create a book with the saved details
+                                                    CurrentBook book = new CurrentBook(
+                                                            document.getId(),
+                                                            title,
+                                                            authors,
+                                                            coverUrl,
+                                                            progressPercent
+                                                    );
+
+                                                    // Add the book to the list
+                                                    bookList.add(book);
+
+                                                    // Refresh the RecyclerView
+                                                    adapter.notifyDataSetChanged();
+                                                });
                                     }
-
-                                    // Refresh the RecyclerView
-                                    adapter.notifyDataSetChanged();
                                 })
 
                                 // Show an error if books cannot be loaded
@@ -166,7 +220,3 @@ public class ToBeRead extends AppCompatActivity {
                 });
 
     }}
-
-
-
-

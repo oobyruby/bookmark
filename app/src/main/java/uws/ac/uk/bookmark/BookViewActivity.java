@@ -1,3 +1,4 @@
+
 package uws.ac.uk.bookmark;
 
 import android.content.Intent;
@@ -37,7 +38,29 @@ import java.net.URLEncoder;
 import java.text.Normalizer;
 import java.util.Locale;
 
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Source;
+import com.google.firebase.firestore.ListenerRegistration;
+import com.google.firebase.Timestamp;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.ArrayList;
+
 public class BookViewActivity extends AppCompatActivity {
+
+    // Firebase listeners for app ratings and reviews
+    private ListenerRegistration bookReferenceListener;
+    private ListenerRegistration reviewsListener;
+
+    private boolean hasAppRating = false;
+    private String googleBooksRating = "not yet rated";
 
     // monitor ambient lighting on the book details screen
     private AmbientLightHelper ambientLightHelper;
@@ -242,12 +265,26 @@ public class BookViewActivity extends AppCompatActivity {
                         "to be read"
                 ));
 
-        // Add the selected book to the currently reading list
-        currentlyReadingButton.setOnClickListener(v ->
-                addBookToShelf(
-                        selectedBook,
-                        "currently reading"
-                ));
+        // Open the currently reading page
+        currentlyReadingButton.setOnClickListener(v -> {
+
+            if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+                Toast.makeText(
+                        BookViewActivity.this,
+                        "Please log in first",
+                        Toast.LENGTH_SHORT
+                ).show();
+
+                return;
+            }
+
+            Intent readingIntent = new Intent(
+                    BookViewActivity.this,
+                    CurrentReading.class
+            );
+
+            startActivity(readingIntent);
+        });
 
         // Open the review dialog when a star rating is selected
         bookReviewRating.setOnRatingBarChangeListener(
@@ -315,14 +352,587 @@ public class BookViewActivity extends AppCompatActivity {
     }
 
 
-    // Placeholder for connecting reading lists to Firebase :)
+
+    // Connect the reading list buttons to Firebase
     private void addBookToShelf(Book book, String readingList) {
 
-        Toast.makeText(
-                BookViewActivity.this,
-                readingList + " not connected yet",
-                Toast.LENGTH_SHORT
-        ).show();
+        String listType = "to be read".equals(readingList)
+                ? "to_be_read" : "currently_reading";
+
+        View shelfButton = findViewById(R.id.addToShelfButton);
+        View readingButton = findViewById(R.id.currentlyReadingButton);
+
+        shelfButton.setEnabled(false);
+        readingButton.setEnabled(false);
+
+        saveBookToReadingList(book, listType)
+                .addOnSuccessListener(unused -> {
+                    Toast.makeText(
+                            BookViewActivity.this,
+                            "Book added to your " + readingList + " list",
+                            Toast.LENGTH_SHORT
+                    ).show();
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(
+                            BookViewActivity.this,
+                            "Could not save book: " + e.getMessage(),
+                            Toast.LENGTH_LONG
+                    ).show();
+                })
+                .addOnCompleteListener(task -> {
+                    shelfButton.setEnabled(true);
+                    readingButton.setEnabled(true);
+                });
+    }
+
+    // Shared method for saving books from Book View and Search Results
+    static Task<Void> saveBookToReadingList(Book book, String listType) {
+
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+        if (user == null) {
+            return Tasks.forException(new Exception("Please log in first"));
+        }
+
+        if (book.getId() == null || book.getId().trim().isEmpty()) {
+            return Tasks.forException(new Exception("Book ID not available"));
+        }
+
+        if (!"to_be_read".equals(listType)
+                && !"currently_reading".equals(listType)) {
+            return Tasks.forException(new Exception("Invalid reading list"));
+        }
+
+        if (book.getTitle() == null || book.getTitle().trim().isEmpty()) {
+            return Tasks.forException(new Exception("Book title not available"));
+        }
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        String userId = user.getUid();
+
+        return findOrCreateBookReference(db, book)
+                .onSuccessTask(bookRefId ->
+                        findOrCreateReadingList(db, userId, listType)
+                                .onSuccessTask(listId ->
+                                        saveReadingEntry(
+                                                db, userId, bookRefId,
+                                                listId, listType
+                                        )));
+    }
+
+    // Find or create the Google Books reference
+    static Task<String> findOrCreateBookReference(
+            FirebaseFirestore db, Book book) {
+
+        String bookId = book.getId();
+        String[] parts = bookId.split("\\|published:", 2);
+        String externalBookId = parts[0];
+        String publishedDate = parts.length > 1 ? parts[1] : "";
+
+        if (externalBookId.trim().isEmpty() || externalBookId.contains("/")) {
+            return Tasks.forException(new Exception("Invalid Google Books ID"));
+        }
+
+        return db.collection("bookReferences")
+                .whereEqualTo("externalBookId", externalBookId)
+                .whereEqualTo("bookSource", "google_books")
+                .limit(1)
+                .get(Source.SERVER)
+                .onSuccessTask(documents -> {
+
+                    if (!documents.isEmpty()) {
+                        return Tasks.forResult(
+                                documents.getDocuments().get(0).getId());
+                    }
+
+                    Map<String, Object> bookReference = new HashMap<>();
+
+                    bookReference.put("externalBookId", externalBookId);
+                    bookReference.put("bookSource", "google_books");
+                    bookReference.put("title", book.getTitle());
+                    bookReference.put("authors", book.getAuthors());
+                    bookReference.put("description", book.getDescription());
+                    bookReference.put("coverUrl", book.getCoverUrl());
+                    bookReference.put("publishedDate", publishedDate);
+                    bookReference.put("createdAt", FieldValue.serverTimestamp());
+
+                    DocumentReference reference = db.collection("bookReferences")
+                            .document("google_books_" + externalBookId);
+
+                    return db.runTransaction(transaction -> {
+                        DocumentSnapshot existing = transaction.get(reference);
+
+                        if (!existing.exists()) {
+                            transaction.set(reference, bookReference);
+                        }
+
+                        return reference.getId();
+                    });
+                });
+    }
+
+    // Find or create the user's reading list
+    static Task<String> findOrCreateReadingList(
+            FirebaseFirestore db, String userId, String listType) {
+
+        return db.collection("readingLists")
+                .whereEqualTo("userId", userId)
+                .whereEqualTo("listType", listType)
+                .limit(1)
+                .get(Source.SERVER)
+                .onSuccessTask(documents -> {
+
+                    if (!documents.isEmpty()) {
+                        return Tasks.forResult(
+                                documents.getDocuments().get(0).getId());
+                    }
+
+                    Map<String, Object> readingList = new HashMap<>();
+
+                    readingList.put("userId", userId);
+                    readingList.put("listType", listType);
+                    readingList.put("createdAt", FieldValue.serverTimestamp());
+                    readingList.put("updatedAt", FieldValue.serverTimestamp());
+
+                    if ("to_be_read".equals(listType)) {
+                        readingList.put("listName", "To Be Read");
+                        readingList.put("description", "Books I want to read");
+                    } else {
+                        readingList.put("listName", "Currently Reading");
+                        readingList.put("description", "Books I am currently reading");
+                    }
+
+                    DocumentReference reference = db.collection("readingLists")
+                            .document(userId + "_" + listType);
+
+                    return reference.set(readingList)
+                            .onSuccessTask(unused ->
+                                    Tasks.forResult(reference.getId()));
+                });
+    }
+
+    // Save or move the book without resetting existing reading progress
+    private static Task<Void> saveReadingEntry(
+            FirebaseFirestore db, String userId, String bookRefId,
+            String listId, String listType) {
+
+        return db.collection("readingEntries")
+                .whereEqualTo("userId", userId)
+                .whereEqualTo("bookRefId", bookRefId)
+                .get(Source.SERVER)
+                .onSuccessTask(documents -> {
+
+                    if (documents.size() > 1) {
+                        return Tasks.forException(new Exception(
+                                "Duplicate reading entries found"));
+                    }
+
+                    if (!documents.isEmpty()) {
+
+                        DocumentSnapshot document = documents.getDocuments().get(0);
+
+                        if (Boolean.TRUE.equals(document.getBoolean("completed"))) {
+                            return Tasks.forException(new Exception(
+                                    "This book is already completed"));
+                        }
+
+                        Map<String, Object> updates = new HashMap<>();
+
+                        updates.put("listId", listId);
+                        updates.put("updatedAt", FieldValue.serverTimestamp());
+
+                        if ("currently_reading".equals(listType)
+                                && document.get("startedAt") == null) {
+                            updates.put("startedAt", FieldValue.serverTimestamp());
+                        }
+
+                        return document.getReference().update(updates);
+                    }
+
+                    Map<String, Object> entry = new HashMap<>();
+
+                    entry.put("userId", userId);
+                    entry.put("bookRefId", bookRefId);
+                    entry.put("listId", listId);
+                    entry.put("progressPercent", 0);
+                    entry.put("completed", false);
+                    entry.put("addedAt", FieldValue.serverTimestamp());
+                    entry.put("updatedAt", FieldValue.serverTimestamp());
+                    entry.put("completedAt", null);
+
+                    if ("currently_reading".equals(listType)) {
+                        entry.put("startedAt", FieldValue.serverTimestamp());
+                    } else {
+                        entry.put("startedAt", null);
+                    }
+
+                    return db.collection("readingEntries")
+                            .document(userId + "_" + bookRefId)
+                            .set(entry);
+                });
+    }
+
+
+
+    // Retrieve the selected book's reference from Firebase
+    private void loadAppReviews() {
+
+        LinearLayout reviewsContainer =
+                findViewById(R.id.latestReviewsContainer);
+
+        reviewsContainer.removeAllViews();
+
+        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+            displayReviewMessage("log in to view app reviews");
+            return;
+        }
+
+        String bookId = getIntent().getStringExtra(EXTRA_ID);
+
+        if (bookId == null || bookId.trim().isEmpty()) {
+            displayReviewMessage("book ID not available");
+            return;
+        }
+
+        String externalBookId = bookId.split("\\|published:", 2)[0];
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        displayReviewMessage("loading app reviews...");
+
+        bookReferenceListener = db.collection("bookReferences")
+                .whereEqualTo("externalBookId", externalBookId)
+                .whereEqualTo("bookSource", "google_books")
+                .limit(1)
+                .addSnapshotListener((documents, error) -> {
+
+                    if (reviewsListener != null) {
+                        reviewsListener.remove();
+                        reviewsListener = null;
+                    }
+
+                    if (error != null || documents == null) {
+                        displayReviewMessage("could not load app reviews");
+                        return;
+                    }
+
+                    if (documents.isEmpty()) {
+                        displayReviewMessage("no app reviews yet");
+                        return;
+                    }
+
+                    String bookRefId =
+                            documents.getDocuments().get(0).getId();
+
+                    retrieveAppReviews(db, bookRefId);
+                });
+    }
+
+    // Retrieve the reviews associated with the selected book
+    private void retrieveAppReviews(
+            FirebaseFirestore db,
+            String bookRefId) {
+
+        reviewsListener = db.collection("reviews")
+                .whereEqualTo("bookRefId", bookRefId)
+                .addSnapshotListener((documents, error) -> {
+
+                    if (error != null || documents == null) {
+                        displayReviewMessage("could not load app reviews");
+                        return;
+                    }
+
+                    ArrayList<DocumentSnapshot> reviews = new ArrayList<>();
+
+                    double totalRating = 0;
+
+                    for (DocumentSnapshot document : documents) {
+
+                        Long rating = document.getLong("rating");
+
+                        if (rating != null && rating >= 1 && rating <= 5) {
+
+                            totalRating += rating;
+                            reviews.add(document);
+                        }
+                    }
+
+                    if (reviews.isEmpty()) {
+                        displayReviewMessage("no app reviews yet");
+                        return;
+                    }
+
+                    // Calculate the average rating
+                    double average = totalRating / reviews.size();
+
+                    hasAppRating = true;
+
+                    TextView bookRating = findViewById(R.id.bookRating);
+
+                    bookRating.setText(
+                            String.format(
+                                    Locale.UK,
+                                    "★ %.1f / 5 (%d %s)",
+                                    average,
+                                    reviews.size(),
+                                    reviews.size() == 1
+                                            ? "app review"
+                                            : "app reviews"
+                            )
+                    );
+
+                    TextView averageRating =
+                            findViewById(R.id.averageRating);
+
+                    RatingBar averageRatingStars =
+                            findViewById(R.id.averageRatingStars);
+
+                    TextView reviewCount =
+                            findViewById(R.id.reviewCount);
+
+                    averageRating.setText(
+                            String.format(Locale.UK, "%.1f", average));
+
+                    averageRatingStars.setRating((float) average);
+
+                    reviewCount.setText(
+                            reviews.size() +
+                                    (reviews.size() == 1
+                                            ? " app review"
+                                            : " app reviews")
+                    );
+
+                    // Sort the reviews with the newest first
+                    reviews.sort((first, second) -> {
+
+                        Timestamp firstDate =
+                                first.getTimestamp("createdAt");
+
+                        Timestamp secondDate =
+                                second.getTimestamp("createdAt");
+
+                        if (firstDate == null && secondDate == null) {
+                            return 0;
+                        }
+
+                        if (firstDate == null) {
+                            return 1;
+                        }
+
+                        if (secondDate == null) {
+                            return -1;
+                        }
+
+                        return secondDate.compareTo(firstDate);
+                    });
+
+                    LinearLayout reviewsContainer =
+                            findViewById(R.id.latestReviewsContainer);
+
+                    reviewsContainer.removeAllViews();
+
+                    // Display the five most recent reviews
+                    for (int i = 0; i < Math.min(5, reviews.size()); i++) {
+
+                        DocumentSnapshot review = reviews.get(i);
+
+                        Long rating = review.getLong("rating");
+
+                        String comment = review.getString("comment");
+
+                        String userId = review.getString("userId");
+
+                        String reviewer = "bookmark reader";
+
+                        FirebaseUser currentUser =
+                                FirebaseAuth.getInstance().getCurrentUser();
+
+                        if (currentUser != null
+                                && currentUser.getUid().equals(userId)) {
+
+                            reviewer = "your review";
+                        }
+
+                        addReviewCard(
+                                reviewsContainer,
+                                reviewer,
+                                rating.intValue(),
+                                comment
+                        );
+                    }
+                });
+    }
+
+    // Display a written review using the existing review design
+    private void addReviewCard(
+            LinearLayout container,
+            String reviewer,
+            int rating,
+            String comment) {
+
+        LinearLayout reviewCard = new LinearLayout(this);
+
+        reviewCard.setOrientation(LinearLayout.HORIZONTAL);
+        reviewCard.setGravity(android.view.Gravity.TOP);
+
+        reviewCard.setBackgroundResource(
+                R.drawable.profile_list_background);
+
+        reviewCard.setPadding(
+                reviewDp(10),
+                reviewDp(10),
+                reviewDp(10),
+                reviewDp(10)
+        );
+
+        LinearLayout.LayoutParams cardParams =
+                new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT
+                );
+
+        cardParams.bottomMargin = reviewDp(8);
+
+        // Display the reviewer's profile icon
+        ImageView profileIcon = new ImageView(this);
+
+        profileIcon.setImageResource(R.drawable.ic_profile);
+
+        profileIcon.setBackgroundResource(
+                R.drawable.book_back_background);
+
+        profileIcon.setContentDescription("reviewer profile");
+
+        profileIcon.setPadding(
+                reviewDp(8),
+                reviewDp(8),
+                reviewDp(8),
+                reviewDp(8)
+        );
+
+        reviewCard.addView(
+                profileIcon,
+                new LinearLayout.LayoutParams(
+                        reviewDp(36),
+                        reviewDp(36)
+                )
+        );
+
+        LinearLayout reviewContent = new LinearLayout(this);
+
+        reviewContent.setOrientation(LinearLayout.VERTICAL);
+
+        LinearLayout.LayoutParams contentParams =
+                new LinearLayout.LayoutParams(
+                        0,
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        1
+                );
+
+        contentParams.setMarginStart(reviewDp(10));
+
+        // Display the reviewer
+        TextView reviewerName = new TextView(this);
+
+        reviewerName.setText(reviewer);
+        reviewerName.setTextColor(Color.parseColor("#44374D"));
+        reviewerName.setTextSize(12);
+
+        reviewContent.addView(reviewerName);
+
+        // Display the selected star rating
+        TextView reviewStars = new TextView(this);
+
+        StringBuilder stars = new StringBuilder();
+
+        for (int i = 1; i <= 5; i++) {
+            stars.append(i <= rating ? "★" : "☆");
+        }
+
+        reviewStars.setText(stars.toString());
+        reviewStars.setTextColor(Color.parseColor("#AD94C0"));
+        reviewStars.setTextSize(14);
+
+        reviewContent.addView(reviewStars);
+
+        // Display the written review
+        TextView reviewComment = new TextView(this);
+
+        reviewComment.setText(comment == null ? "" : comment);
+        reviewComment.setTextColor(Color.parseColor("#666666"));
+        reviewComment.setTextSize(12);
+
+        LinearLayout.LayoutParams commentParams =
+                new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT
+                );
+
+        commentParams.topMargin = reviewDp(4);
+
+        reviewContent.addView(reviewComment, commentParams);
+
+        reviewCard.addView(reviewContent, contentParams);
+
+        container.addView(reviewCard, cardParams);
+    }
+
+    // Display a message when reviews are unavailable
+    private void displayReviewMessage(String message) {
+
+        hasAppRating = false;
+
+        TextView bookRating = findViewById(R.id.bookRating);
+
+        bookRating.setText(googleBooksRating);
+
+        TextView averageRating = findViewById(R.id.averageRating);
+
+        RatingBar averageRatingStars =
+                findViewById(R.id.averageRatingStars);
+
+        TextView reviewCount = findViewById(R.id.reviewCount);
+
+        LinearLayout reviewsContainer =
+                findViewById(R.id.latestReviewsContainer);
+
+        averageRating.setText("—");
+        averageRatingStars.setRating(0);
+        reviewCount.setText(message);
+
+        reviewsContainer.removeAllViews();
+
+        TextView reviewMessage = new TextView(this);
+
+        reviewMessage.setText(message);
+        reviewMessage.setTextColor(Color.parseColor("#777777"));
+        reviewMessage.setTextSize(12);
+        reviewMessage.setGravity(android.view.Gravity.CENTER);
+
+        reviewsContainer.addView(reviewMessage);
+    }
+
+    // Convert display measurements to pixels
+    private int reviewDp(int value) {
+
+        return Math.round(
+                value * getResources().getDisplayMetrics().density
+        );
+    }
+
+    // Stop listening to Firebase when Book View is closed
+    private void stopAppReviews() {
+
+        if (bookReferenceListener != null) {
+            bookReferenceListener.remove();
+            bookReferenceListener = null;
+        }
+
+        if (reviewsListener != null) {
+            reviewsListener.remove();
+            reviewsListener = null;
+        }
     }
 
 
@@ -662,7 +1272,12 @@ public class BookViewActivity extends AppCompatActivity {
 
             runOnUiThread(() -> {
                 if (!isFinishing() && !isDestroyed()) {
-                    ratingView.setText(finalRatingText);
+
+                    googleBooksRating = finalRatingText;
+
+                    if (!hasAppRating) {
+                        ratingView.setText(finalRatingText);
+                    }
                 }
             });
 
@@ -721,6 +1336,12 @@ public class BookViewActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        loadAppReviews();
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
         if (ambientLightHelper != null) {
@@ -740,6 +1361,8 @@ public class BookViewActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
+
+        stopAppReviews();
 
         audioHandler.removeCallbacks(audioProgressUpdater);
 

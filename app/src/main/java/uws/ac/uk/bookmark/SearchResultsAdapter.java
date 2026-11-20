@@ -17,10 +17,20 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
-
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Source;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FieldValue;
 import java.util.ArrayList;
 
 import java.util.Locale;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class SearchResultsAdapter
@@ -105,25 +115,8 @@ public class SearchResultsAdapter
                     }
                 });
 
-        // Display the bookmark icon
-        holder.bookBookmark.setImageResource(
-                R.drawable.bookmark_empty);
-        holder.bookBookmark.setSelected(false);
-
-        // Handle the bookmark button
-        holder.bookBookmark.setOnClickListener(v -> {
-
-            boolean bookmarked = !v.isSelected();
-            v.setSelected(bookmarked);
-
-            holder.bookBookmark.setImageResource(
-                    bookmarked
-                            ? R.drawable.bookmark
-                            : R.drawable.bookmark_empty
-            );
-
-            // Placeholder for connecting bookmarks to Firebase :)
-        });
+        // Display and connect the bookmark icon
+        bindBookmark(holder, book);
 
         // Open Book View when a book is selected
         holder.itemView.setOnClickListener(v -> {
@@ -166,6 +159,203 @@ public class SearchResultsAdapter
             // Open Screen bookoverview
             v.getContext().startActivity(intent);
         });
+    }
+
+    // Retrieve and display the saved bookmark
+    private void bindBookmark(BookViewHolder holder, Book book) {
+
+        Object bookmarkTag = new Object();
+
+        holder.bookBookmark.setTag(bookmarkTag);
+        holder.bookBookmark.setSelected(false);
+        holder.bookBookmark.setImageResource(
+                R.drawable.bookmark_empty);
+
+        holder.bookBookmark.setOnClickListener(null);
+        holder.bookBookmark.setEnabled(false);
+
+        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+
+            holder.bookBookmark.setEnabled(true);
+
+            holder.bookBookmark.setOnClickListener(v ->
+                    Toast.makeText(
+                            v.getContext(),
+                            "Please log in first",
+                            Toast.LENGTH_SHORT
+                    ).show());
+
+            return;
+        }
+
+        findBookmark(book)
+                .addOnSuccessListener(document -> {
+
+                    if (holder.bookBookmark.getTag() != bookmarkTag) {
+                        return;
+                    }
+
+                    boolean bookmarked = document != null;
+
+                    holder.bookBookmark.setSelected(bookmarked);
+
+                    holder.bookBookmark.setImageResource(
+                            bookmarked
+                                    ? R.drawable.bookmark
+                                    : R.drawable.bookmark_empty
+                    );
+
+                    holder.bookBookmark.setEnabled(true);
+
+                    // Handle the bookmark button
+                    holder.bookBookmark.setOnClickListener(v -> {
+
+                        v.setEnabled(false);
+
+                        boolean remove = v.isSelected();
+
+                        Task<Void> task;
+
+                        if (remove) {
+                            task = removeBookmark(book);
+                        } else {
+                            task = BookViewActivity.saveBookToReadingList(
+                                    book,
+                                    "to_be_read"
+                            );
+                        }
+
+                        task.addOnSuccessListener(unused ->
+                                Toast.makeText(
+                                        v.getContext(),
+                                        remove
+                                                ? "Bookmark removed"
+                                                : "Book added to your to be read list",
+                                        Toast.LENGTH_SHORT
+                                ).show());
+
+                        task.addOnFailureListener(e ->
+                                Toast.makeText(
+                                        v.getContext(),
+                                        "Could not update bookmark: "
+                                                + e.getMessage(),
+                                        Toast.LENGTH_LONG
+                                ).show());
+
+                        task.addOnCompleteListener(result -> {
+
+                            if (holder.bookBookmark.getTag() == bookmarkTag) {
+                                bindBookmark(holder, book);
+                            }
+                        });
+                    });
+                })
+                .addOnFailureListener(e ->
+                        android.util.Log.e(
+                                "SearchResultsAdapter",
+                                "Could not retrieve bookmark",
+                                e
+                        ));
+    }
+
+    // Find the selected book in the user's to be read list
+    private Task<DocumentSnapshot> findBookmark(Book book) {
+
+        FirebaseUser user =
+                FirebaseAuth.getInstance().getCurrentUser();
+
+        if (user == null) {
+            return Tasks.forException(
+                    new Exception("Please log in first"));
+        }
+
+        if (book.getId() == null || book.getId().trim().isEmpty()) {
+            return Tasks.forException(
+                    new Exception("Book ID not available"));
+        }
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        String userId = user.getUid();
+        String externalBookId = book.getId().split("\\|published:", 2)[0];
+
+        return db.collection("readingLists")
+                .whereEqualTo("userId", userId)
+                .whereEqualTo("listType", "to_be_read")
+                .limit(1)
+                .get(Source.SERVER)
+                .onSuccessTask(lists -> {
+
+                    if (lists.isEmpty()) {
+                        return Tasks.forResult((DocumentSnapshot) null);
+                    }
+
+                    String listId =
+                            lists.getDocuments().get(0).getId();
+
+                    return db.collection("bookReferences")
+                            .whereEqualTo("externalBookId", externalBookId)
+                            .whereEqualTo("bookSource", "google_books")
+                            .limit(1)
+                            .get(Source.SERVER)
+                            .onSuccessTask(references -> {
+
+                                if (references.isEmpty()) {
+                                    return Tasks.forResult(
+                                            (DocumentSnapshot) null);
+                                }
+
+                                String bookRefId =
+                                        references.getDocuments().get(0).getId();
+
+                                return db.collection("readingEntries")
+                                        .whereEqualTo("userId", userId)
+                                        .whereEqualTo("listId", listId)
+                                        .whereEqualTo("bookRefId", bookRefId)
+                                        .whereEqualTo("completed", false)
+                                        .limit(1)
+                                        .get(Source.SERVER)
+                                        .onSuccessTask(entries ->
+                                                Tasks.forResult(
+                                                        entries.isEmpty()
+                                                                ? null
+                                                                : entries.getDocuments().get(0)
+                                                ));
+                            });
+                });
+    }
+
+    // Remove the selected book from the to be read list
+    private Task<Void> removeBookmark(Book book) {
+
+        return findBookmark(book)
+                .onSuccessTask(document -> {
+
+                    if (document == null) {
+                        return Tasks.forResult((Void) null);
+                    }
+
+                    FirebaseFirestore db =
+                            FirebaseFirestore.getInstance();
+
+                    String listId = document.getString("listId");
+
+                    return db.runTransaction(transaction -> {
+
+                        DocumentSnapshot current =
+                                transaction.get(document.getReference());
+
+                        if (current.exists()
+                                && listId.equals(current.getString("listId"))
+                                && Boolean.FALSE.equals(
+                                current.getBoolean("completed"))) {
+
+                            transaction.delete(document.getReference());
+                        }
+
+                        return null;
+                    });
+                });
     }
 
     // Display the review dialog for the selected book
@@ -320,25 +510,162 @@ public class SearchResultsAdapter
 
                     submitReview(
                             view,
-                            book.getId(),
+                            book,
                             rating,
-                            review
+                            review,
+                            dialog
                     );
                 });
     }
 
-    // Placeholder for connecting reviews to Firebase :D
+    // Connect reviews to Firebase
     private static void submitReview(
             View view,
-            String bookId,
+            Book book,
             float rating,
+            String review,
+            AlertDialog dialog) {
+
+        FirebaseUser user =
+                FirebaseAuth.getInstance().getCurrentUser();
+
+        if (user == null) {
+            Toast.makeText(
+                    view.getContext(),
+                    "please log in first",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            return;
+        }
+
+        if (book.getId() == null || book.getId().trim().isEmpty()) {
+            Toast.makeText(
+                    view.getContext(),
+                    "book ID not available",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            return;
+        }
+
+        if (book.getTitle() == null || book.getTitle().trim().isEmpty()) {
+            Toast.makeText(
+                    view.getContext(),
+                    "book title not available",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            return;
+        }
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        String userId = user.getUid();
+
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+                .setEnabled(false);
+
+        BookViewActivity.findOrCreateBookReference(db, book)
+                .onSuccessTask(bookRefId ->
+                        saveReview(
+                                db,
+                                userId,
+                                bookRefId,
+                                (int) rating,
+                                review
+                        ))
+                .addOnSuccessListener(unused -> {
+
+                    Toast.makeText(
+                            view.getContext(),
+                            "review saved successfully",
+                            Toast.LENGTH_SHORT
+                    ).show();
+
+                    dialog.dismiss();
+                })
+                .addOnFailureListener(e -> {
+
+                    Toast.makeText(
+                            view.getContext(),
+                            "could not save review: " + e.getMessage(),
+                            Toast.LENGTH_LONG
+                    ).show();
+                })
+                .addOnCompleteListener(task -> {
+
+                    if (dialog.isShowing()) {
+                        dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+                                .setEnabled(true);
+                    }
+                });
+    }
+
+    // Save or update the user's review
+    private static Task<Void> saveReview(
+            FirebaseFirestore db,
+            String userId,
+            String bookRefId,
+            int rating,
             String review) {
 
-        Toast.makeText(
-                view.getContext(),
-                "review not saved - database connection pending",
-                Toast.LENGTH_SHORT
-        ).show();
+        return db.collection("reviews")
+                .whereEqualTo("userId", userId)
+                .whereEqualTo("bookRefId", bookRefId)
+                .get(Source.SERVER)
+                .onSuccessTask(documents -> {
+
+                    if (documents.size() > 1) {
+                        return Tasks.forException(
+                                new Exception("duplicate reviews found"));
+                    }
+
+                    DocumentReference reference;
+
+                    if (!documents.isEmpty()) {
+                        reference = documents.getDocuments()
+                                .get(0).getReference();
+                    } else {
+                        reference = db.collection("reviews")
+                                .document(userId + "_" + bookRefId);
+                    }
+
+                    return db.runTransaction(transaction -> {
+
+                        DocumentSnapshot existing =
+                                transaction.get(reference);
+
+                        Map<String, Object> reviewData =
+                                new HashMap<>();
+
+                        reviewData.put("userId", userId);
+                        reviewData.put("bookRefId", bookRefId);
+                        reviewData.put("rating", rating);
+                        reviewData.put("comment", review);
+                        reviewData.put("updatedAt",
+                                FieldValue.serverTimestamp());
+
+                        if (existing.exists()) {
+
+                            reviewData.put("containsSpoilers",
+                                    Boolean.TRUE.equals(
+                                            existing.getBoolean("containsSpoilers")));
+
+                            transaction.update(reference, reviewData);
+
+                        } else {
+
+                            reviewData.put("containsSpoilers", false);
+                            reviewData.put("createdAt",
+                                    FieldValue.serverTimestamp());
+
+                            transaction.set(reference, reviewData);
+                        }
+
+                        return null;
+                    });
+                });
     }
 
     @Override

@@ -1,3 +1,4 @@
+
 package uws.ac.uk.bookmark;
 
 import android.view.LayoutInflater;
@@ -10,6 +11,7 @@ import android.widget.ImageButton;
 import android.widget.PopupMenu;
 import android.widget.Toast;
 import android.app.AlertDialog;
+import android.content.Context;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -17,8 +19,16 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.google.firebase.Firebase;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 public class ToBeReadAdapter extends RecyclerView.Adapter<ToBeReadAdapter.BookViewHolder> {
 
     //Stores the books that will appear on scren
@@ -59,10 +69,10 @@ public class ToBeReadAdapter extends RecyclerView.Adapter<ToBeReadAdapter.BookVi
     @NonNull
     @Override
     public BookViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType){
-       //load the item_to_be_read.xml
-       View view = LayoutInflater.from(parent.getContext())
-               .inflate(R.layout.item_to_be_read, parent,false);
-       // return new book card
+        //load the item_to_be_read.xml
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.item_to_be_read, parent,false);
+        // return new book card
         return new BookViewHolder(view);
     }
     // display the details of each book in the card
@@ -96,7 +106,7 @@ public class ToBeReadAdapter extends RecyclerView.Adapter<ToBeReadAdapter.BookVi
             FirebaseFirestore.getInstance()
                     .collection("readingEntries")
                     .document(book.getDocumentId())
-                    .update("listId", com.google.firebase.firestore.FieldValue.delete())
+                    .delete()
                     .addOnSuccessListener(aVoid->{
                         //remove the card from the screen
                         int currentPosition = bookList.indexOf(book);
@@ -120,11 +130,25 @@ public class ToBeReadAdapter extends RecyclerView.Adapter<ToBeReadAdapter.BookVi
             //Create a popup menu attached to the tree dot button
             PopupMenu popupMenu = new PopupMenu(holder.itemView.getContext(), holder.bookMenu);
 
+            //add the start reading option
+            popupMenu.getMenu().add("Start reading");
+
             //add the delete book option
             popupMenu.getMenu().add("Delete book");
 
             //Handle the menu option when selected
             popupMenu.setOnMenuItemClickListener(item -> {
+
+                if ("Start reading".contentEquals(item.getTitle())) {
+
+                    startReading(
+                            holder.itemView.getContext(),
+                            book
+                    );
+
+                    return true;
+                }
+
                 //Ask the user to confirm deleting
                 new AlertDialog.Builder(holder.itemView.getContext())
                         .setTitle("Delete book")
@@ -136,7 +160,7 @@ public class ToBeReadAdapter extends RecyclerView.Adapter<ToBeReadAdapter.BookVi
                                     .delete()
                                     .addOnSuccessListener(aVoid ->{
 
-                                       //remove the book from the displayed list
+                                        //remove the book from the displayed list
                                         int currentPosition = bookList.indexOf(book);
                                         if(currentPosition != -1){
                                             bookList.remove(currentPosition);
@@ -145,8 +169,8 @@ public class ToBeReadAdapter extends RecyclerView.Adapter<ToBeReadAdapter.BookVi
                                         Toast.makeText(holder.itemView.getContext(), "Book deleted",Toast.LENGTH_SHORT).show();
                                     })
                                     .addOnFailureListener(e->{
-                                       //show an error if deletion fails
-                                       Toast.makeText(holder.itemView.getContext(), "Could not delete book:" + e.getMessage(),Toast.LENGTH_SHORT).show();
+                                        //show an error if deletion fails
+                                        Toast.makeText(holder.itemView.getContext(), "Could not delete book:" + e.getMessage(),Toast.LENGTH_SHORT).show();
                                     });
                         })
                         .setNegativeButton("Cancel", null)
@@ -158,12 +182,93 @@ public class ToBeReadAdapter extends RecyclerView.Adapter<ToBeReadAdapter.BookVi
 
         });
     }
+
+    // Move the selected book to the currently reading list
+    private void startReading(Context context, CurrentBook book) {
+
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+        if (user == null) {
+            Toast.makeText(context,
+                    "Please log in first",
+                    Toast.LENGTH_SHORT).show();
+
+            return;
+        }
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        String userId = user.getUid();
+
+        DocumentReference entryReference = db.collection("readingEntries")
+                .document(book.getDocumentId());
+
+        // Find or create the currently reading list
+        BookViewActivity.findOrCreateReadingList(
+                        db,
+                        userId,
+                        "currently_reading"
+                )
+                .onSuccessTask(listId -> db.runTransaction(transaction -> {
+
+                    DocumentSnapshot entry = transaction.get(entryReference);
+
+                    if (!entry.exists()
+                            || !userId.equals(entry.getString("userId"))) {
+
+                        throw new FirebaseFirestoreException(
+                                "Reading entry not available",
+                                FirebaseFirestoreException.Code.FAILED_PRECONDITION
+                        );
+                    }
+
+                    if (Boolean.TRUE.equals(entry.getBoolean("completed"))) {
+
+                        throw new FirebaseFirestoreException(
+                                "This book is already completed",
+                                FirebaseFirestoreException.Code.FAILED_PRECONDITION
+                        );
+                    }
+
+                    Map<String, Object> updates = new HashMap<>();
+
+                    updates.put("listId", listId);
+                    updates.put("updatedAt", FieldValue.serverTimestamp());
+
+                    if (entry.get("startedAt") == null) {
+                        updates.put("startedAt", FieldValue.serverTimestamp());
+                    }
+
+                    // Update the reading list without resetting progress
+                    transaction.update(entryReference, updates);
+
+                    return (Void) null;
+                }))
+                .addOnSuccessListener(aVoid -> {
+
+                    // Remove the book from the to be read page
+                    int currentPosition = bookList.indexOf(book);
+
+                    if (currentPosition != -1) {
+                        bookList.remove(currentPosition);
+                        notifyItemRemoved(currentPosition);
+                    }
+
+                    Toast.makeText(context,
+                            "Book moved to currently reading",
+                            Toast.LENGTH_SHORT).show();
+                })
+                .addOnFailureListener(e -> {
+
+                    Toast.makeText(context,
+                            "Could not move book: " + e.getMessage(),
+                            Toast.LENGTH_LONG).show();
+                });
+    }
+
     // how many books are in the to be read list
     @Override
     public int getItemCount(){
         return bookList.size();
     }
 }
-
-
-
