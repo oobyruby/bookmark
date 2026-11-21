@@ -9,6 +9,10 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import android.graphics.Color;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import java.util.ArrayList;
 import java.util.Locale;
 
@@ -26,6 +30,40 @@ public class SearchResultsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search_results);
+
+        // match the android system bars to the bookmark theme
+        getWindow().setStatusBarColor(Color.parseColor("#BCA9CC"));
+        getWindow().setNavigationBarColor(Color.parseColor("#BCA9CC"));
+        getWindow().setNavigationBarContrastEnforced(false);
+
+        // use dark status bar icons
+        getWindow().getDecorView().setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+        );
+
+        // keep the search results clear of android system bars
+        View root = findViewById(android.R.id.content);
+
+        root.setBackgroundColor(Color.parseColor("#BCA9CC"));
+
+        ViewCompat.setOnApplyWindowInsetsListener(root, (view, insets) -> {
+            Insets systemBars = insets.getInsets(
+                    WindowInsetsCompat.Type.systemBars()
+                            | WindowInsetsCompat.Type.displayCutout()
+            );
+
+            view.setPadding(
+                    systemBars.left,
+                    systemBars.top,
+                    systemBars.right,
+                    systemBars.bottom
+            );
+
+            return insets;
+        });
+
+        ViewCompat.requestApplyInsets(root);
+
 
         // Connect Java to the XML layout
         TextView resultsTitle = findViewById(R.id.resultsTitle);

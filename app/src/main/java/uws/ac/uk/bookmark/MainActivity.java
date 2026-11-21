@@ -15,6 +15,9 @@ import android.widget.TextView;
 import android.widget.ScrollView;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+
 
 import java.util.IdentityHashMap;
 import java.util.Map;
@@ -78,6 +81,48 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // keep the status bar lavender and the content below the camera
+        getWindow().setStatusBarColor(
+                android.graphics.Color.parseColor("#BCA9CC")
+        );
+
+        getWindow().setNavigationBarColor(
+                android.graphics.Color.parseColor("#BCA9CC")
+        );
+
+        getWindow().setNavigationBarContrastEnforced(false);
+
+
+        getWindow().getDecorView().setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+        );
+
+        View root = findViewById(android.R.id.content);
+
+        // colour the area behind the system navigation bar
+        root.setBackgroundColor(
+                android.graphics.Color.parseColor("#BCA9CC")
+        );
+
+
+        ViewCompat.setOnApplyWindowInsetsListener(root, (view, insets) -> {
+            androidx.core.graphics.Insets systemBars = insets.getInsets(
+                    WindowInsetsCompat.Type.systemBars()
+                            | WindowInsetsCompat.Type.displayCutout()
+            );
+
+            view.setPadding(
+                    systemBars.left,
+                    systemBars.top,
+                    systemBars.right,
+                    systemBars.bottom
+            );
+
+            return insets;
+        });
+
+        ViewCompat.requestApplyInsets(root);
 
         // prevent slow api requests from blocking the homepage
         new android.os.Handler(android.os.Looper.getMainLooper())

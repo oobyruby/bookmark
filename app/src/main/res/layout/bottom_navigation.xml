@@ -3,10 +3,12 @@
     android:layout_width="match_parent"
     android:layout_height="55dp"
     android:orientation="horizontal"
-    android:gravity="center"
+    android:gravity="bottom|center_horizontal"
+    android:paddingBottom="3dp"
     android:background="@color/bottom_purple">
 
-    <ImageButton
+
+<ImageButton
         android:id="@+id/navHome"
         android:layout_width="55dp"
         android:layout_height="match_parent"
