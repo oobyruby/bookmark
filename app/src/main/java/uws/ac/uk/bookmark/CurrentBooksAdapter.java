@@ -1,6 +1,7 @@
 package uws.ac.uk.bookmark;
 
 // firebase
+import com.bumptech.glide.Glide;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FieldValue;
 
@@ -78,6 +79,12 @@ public class CurrentBooksAdapter extends RecyclerView.Adapter<CurrentBooksAdapte
         //Display the book information
         holder.bookTitle.setText(book.getTitle());
         holder.bookAuthor.setText(book.getAuthor());
+        // Display the book cover
+        Glide.with(holder.itemView.getContext())
+                .load(book.getCoverUrl())
+                .placeholder(R.drawable.genre_tile_background)
+                .error(R.drawable.genre_tile_background)
+                .into(holder.bookCover);
 
         //Display the reading process
         holder.bookProgress.setProgress(book.getProgress());
