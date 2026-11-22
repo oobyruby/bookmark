@@ -1,8 +1,10 @@
-
 package uws.ac.uk.bookmark;
 
+import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -10,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 
 import java.util.List;
+import java.util.Locale;
 
 public class ProfileCompletedBooksAdapter extends RecyclerView.Adapter<ProfileCompletedBooksAdapter.BookCoverViewHolder> {
 
@@ -24,12 +27,14 @@ public class ProfileCompletedBooksAdapter extends RecyclerView.Adapter<ProfileCo
     public static class BookCoverViewHolder extends RecyclerView.ViewHolder {
 
         ImageView bookCover;
+        TextView bookTitle;
 
-        public BookCoverViewHolder(@NonNull ImageView imageView) {
-            super(imageView);
+        public BookCoverViewHolder(@NonNull View itemView) {
+            super(itemView);
 
             // Connect the ImageView to this ViewHolder
-            bookCover = imageView;
+            bookCover = itemView.findViewById(R.id.latestReadCover);
+            bookTitle = itemView.findViewById(R.id.latestReadTitle);
         }
     }
 
@@ -38,26 +43,11 @@ public class ProfileCompletedBooksAdapter extends RecyclerView.Adapter<ProfileCo
     @Override
     public BookCoverViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
 
-        // Create an ImageView programmatically (no extra XML file needed)
-        ImageView imageView = new ImageView(parent.getContext());
+        // Create the book card using the XML layout
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.item_profile_latest_read, parent, false);
 
-        // Convert dimensions from dp to pixels
-        float density = parent.getResources().getDisplayMetrics().density;
-
-        // Set the width and height of each book cover
-        RecyclerView.LayoutParams params = new RecyclerView.LayoutParams(
-                (int) (85 * density),
-                (int) (115 * density)
-        );
-
-        // Add a small space between book covers
-        params.setMarginEnd((int) (8 * density));
-
-        imageView.setLayoutParams(params);
-
-        imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-
-        return new BookCoverViewHolder(imageView);
+        return new BookCoverViewHolder(view);
     }
 
     // Displays the correct book cover at each RecyclerView position
@@ -67,12 +57,20 @@ public class ProfileCompletedBooksAdapter extends RecyclerView.Adapter<ProfileCo
         // Get the book at the current position in the list
         CurrentBook book = bookList.get(position);
 
+        // Display the book title underneath the cover
+        String title = book.getTitle();
+
+        holder.bookTitle.setText(
+                title == null ? "" : title.toLowerCase(Locale.ROOT)
+        );
+
         // Use Glide to load the book cover from its image URL
         Glide.with(holder.bookCover.getContext())
                 .load(book.getCoverUrl())
 
                 // show a placeholder while the cover image loads
                 .placeholder(R.drawable.genre_tile_background)
+                .error(R.drawable.genre_tile_background)
 
                 // display the loaded image in the ImageView
                 .into(holder.bookCover);

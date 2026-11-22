@@ -43,6 +43,10 @@ public class ProfileActivity extends AppCompatActivity {
     private TextView profileUsername;
     private TextView profileHandle;
 
+    // displays the number of books in each bookshelf
+    private TextView currentlyReadingCount;
+    private TextView toBeReadCount;
+
     // Firebase services
     private FirebaseAuth auth;
     private FirebaseFirestore db;
@@ -148,6 +152,11 @@ public class ProfileActivity extends AppCompatActivity {
         db = FirebaseFirestore.getInstance();
         // Load the user's completed books for the Profile page
         loadCompletedBooks();
+
+        // connect the bookshelf counters
+        currentlyReadingCount = findViewById(R.id.currentlyReadingCount);
+        toBeReadCount = findViewById(R.id.toBeReadCount);
+
 
         //Connect to the firebase storage bucket
         storage = FirebaseStorage.getInstance(
@@ -492,4 +501,86 @@ public class ProfileActivity extends AppCompatActivity {
                 });
     }
 
+    // load the number of books in each bookshelf
+    private void loadBookshelfCounts() {
+
+        if (auth.getCurrentUser() == null) {
+            return;
+        }
+
+        String userId = auth.getCurrentUser().getUid();
+
+        // count books currently being read
+        loadBookshelfCount(
+                userId,
+                "currently_reading",
+                currentlyReadingCount
+        );
+
+        // count books waiting to be read
+        loadBookshelfCount(
+                userId,
+                "to_be_read",
+                toBeReadCount
+        );
+    }
+
+    // find the bookshelf and count its reading entries
+    private void loadBookshelfCount(
+            String userId,
+            String listType,
+            TextView countView) {
+
+        db.collection("readingLists")
+                .whereEqualTo("userId", userId)
+                .whereEqualTo("listType", listType)
+                .limit(1)
+                .get()
+                .addOnSuccessListener(lists -> {
+
+                    // display zero if the bookshelf does not exist
+                    if (lists.isEmpty()) {
+                        countView.setText("0 books");
+                        return;
+                    }
+
+                    // get the bookshelf document ID
+                    String listId = lists.getDocuments().get(0).getId();
+
+                    // count the books belonging to this bookshelf
+                    db.collection("readingEntries")
+                            .whereEqualTo("userId", userId)
+                            .whereEqualTo("listId", listId)
+                            .whereEqualTo("completed", false)
+                            .get()
+                            .addOnSuccessListener(entries -> {
+
+                                int count = entries.size();
+
+                                // display the correct singular or plural
+                                String countText = count == 1
+                                        ? "1 book"
+                                        : count + " books";
+
+                                countView.setText(countText);
+                            })
+                            .addOnFailureListener(e -> {
+                                countView.setText("unavailable");
+                            });
+
+                })
+                .addOnFailureListener(e -> {
+                    countView.setText("unavailable");
+                });
+    }
+
+    // refresh bookshelf counts when returning to profile
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (auth != null && db != null) {
+            loadBookshelfCounts();
+        }
+    }
 }

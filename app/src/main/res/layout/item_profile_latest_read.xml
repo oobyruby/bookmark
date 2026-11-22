@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="110dp"
+    android:layout_height="wrap_content"
+    android:layout_marginEnd="8dp"
+    android:orientation="vertical">
+
+    <!-- book cover -->
+    <ImageView
+        android:id="@+id/latestReadCover"
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        android:scaleType="fitXY"
+        android:contentDescription="Book cover" />
+
+    <!-- book title -->
+    <TextView
+        android:id="@+id/latestReadTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:textColor="#333333"
+        android:textSize="12sp" />
+
+</LinearLayout>
