@@ -2,9 +2,11 @@ package uws.ac.uk.bookmark;
 
 // firebase
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FieldValue;
 
 // create and display views
 import android.text.InputType;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -127,8 +129,20 @@ public class CurrentBooksAdapter extends RecyclerView.Adapter<CurrentBooksAdapte
                                                 .collection("readingEntries")
                                                 // find the correct book using document it
                                                 .document(book.getDocumentId())
-                                                // save the new progress percentage to firestore
-                                                .update("progressPercent", newProgress);
+                                                .update(
+                                                        "progressPercent",newProgress, // save the new percentage
+                                                        "completed", newProgress == 100,
+                                                        "completedAt", newProgress == 100
+                                                          ? FieldValue.serverTimestamp()// save when the book is completed
+                                                        :null // clear the complete
+                                                )
+                                                //show a message in Logcat if the update succeeds
+                                                .addOnSuccessListener(unused -> {
+                                                    Log.d("CurrentBooks", "Progress save successfuly");
+                                                })
+                                                .addOnFailureListener(e -> {
+                                                    Log.e("CurrentBooks", "could not save progress",e);
+                                                });
                                     }
 
                                 }
@@ -142,7 +156,44 @@ public class CurrentBooksAdapter extends RecyclerView.Adapter<CurrentBooksAdapte
 
                 // If the user selects Delete book, handle it here
                 else if (item.getTitle().equals("Delete book")) {
-                    // We will add the delete code next
+
+                    //ask the user to confirm before deleting
+                    new AlertDialog.Builder(v.getContext())
+                            .setTitle("Delete book")
+                            .setMessage("Are you sure you want to delete this book ?")
+
+                            //delete the book if the user confirms
+                            .setPositiveButton("Delete", (dialog, which)->{
+                                //connect to the firebase database
+                                FirebaseFirestore.getInstance()
+
+                                        //open the readingEntites
+                                        .collection("readingEntries")
+                                        //find the selected book using its document id
+                                        .document(book.getDocumentId())
+                                        //Delete the book from firebase
+                                        .delete()
+                                        //check if the deletion worked
+                                        .addOnSuccessListener( unused -> {
+                                            int currentPosition = holder.getBindingAdapterPosition();
+
+                                            if (currentPosition != RecyclerView.NO_POSITION){
+                                                //refresh the RecyclerView
+                                                bookList.remove(currentPosition);
+                                                notifyItemRemoved(currentPosition);
+                                            }
+                                            //show success message on Logcat
+                                            Log.d("CurrentBooks", "Book deleted successfully");
+                                        })
+                                        //handle deletion errors
+                                        .addOnFailureListener(e -> {
+                                            Log.e("CurrentBooks", "Could not deleted book",e);
+                                        });
+                            })
+                            //cancel deletion if the user change their mind
+                            .setNegativeButton("Cancel", null)
+                            //Display the conformation dialog
+                    .show();
                 }
 
                 // Finish handling the selected menu option

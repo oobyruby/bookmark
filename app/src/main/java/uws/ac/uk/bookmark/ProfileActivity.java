@@ -26,6 +26,11 @@ import android.content.ContentValues;
 import android.provider.MediaStore;
 import androidx.appcompat.app.AlertDialog;
 import android.view.View;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.LinearLayoutManager;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -42,7 +47,14 @@ public class ProfileActivity extends AppCompatActivity {
     private FirebaseAuth auth;
     private FirebaseFirestore db;
     private FirebaseStorage storage;
+    // Displays the completed books under Latest Reads
+    private RecyclerView latestReadsRecyclerView;
 
+    // Stores the completed books loaded from Firestore
+    private ArrayList<CurrentBook> latestReadsList;
+
+    // Adapter displays each book cover
+    private ProfileCompletedBooksAdapter profileCompletedBooksAdapter;
     //used to open the device's image picker
     private ActivityResultLauncher<String[]> imagePicker;
 
@@ -51,10 +63,30 @@ public class ProfileActivity extends AppCompatActivity {
     //stores the location of new image
     private Uri cameraImageUri;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
+        // Connect the Completed Books RecyclerView to the XML layout
+        latestReadsRecyclerView = findViewById(R.id.completedBooksRecyclerView);
+
+// Display the book covers horizontally
+        latestReadsRecyclerView.setLayoutManager(
+                new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        );
+
+// Allow the horizontal RecyclerView to work inside the ScrollView
+        latestReadsRecyclerView.setNestedScrollingEnabled(false);
+
+// Create a list to store completed books
+        latestReadsList = new ArrayList<>();
+
+// Create the Profile adapter using the completed books list
+        profileCompletedBooksAdapter = new ProfileCompletedBooksAdapter(latestReadsList);
+
+// Connect the adapter to the RecyclerView
+        latestReadsRecyclerView.setAdapter(profileCompletedBooksAdapter);
 
         // match the android system bars to the bookmark theme
         getWindow().setStatusBarColor(Color.parseColor("#BCA9CC"));
@@ -105,7 +137,7 @@ public class ProfileActivity extends AppCompatActivity {
             startActivity(intent);
         });
         seeAllLatestReads.setOnClickListener(view -> {
-            Intent intent = new Intent(ProfileActivity.this, LatestReads.class );
+            Intent intent = new Intent(ProfileActivity.this, SeeAllActivity.class );
             startActivity(intent);
         });
 
@@ -114,6 +146,8 @@ public class ProfileActivity extends AppCompatActivity {
 
         //Initialise Cloud Firestore
         db = FirebaseFirestore.getInstance();
+        // Load the user's completed books for the Profile page
+        loadCompletedBooks();
 
         //Connect to the firebase storage bucket
         storage = FirebaseStorage.getInstance(
@@ -340,11 +374,16 @@ public class ProfileActivity extends AppCompatActivity {
 
                     //check whether a picture exist
                     if (photoUrl != null){
-                        //display the picture using glide
+                        //remove background when profile image exist
+                        findViewById(R.id.profileImageContainer)
+                                .setBackgroundColor(Color.TRANSPARENT);
+                        //display the picture
                         Glide.with(ProfileActivity.this)
                                 .load(photoUrl)
                                 .circleCrop()
                                 .into(profileImage);
+
+
                     }
 
                 });
@@ -367,4 +406,90 @@ public class ProfileActivity extends AppCompatActivity {
 
                 });
     }
+
+    // Load all completed books belonging to the current user
+    private void loadCompletedBooks() {
+
+        // Check that a user is signed in
+        if (auth.getCurrentUser() == null) {
+            return;
+        }
+
+        // Get the current user's Firebase ID
+        String userId = auth.getCurrentUser().getUid();
+
+        // Find this user's completed reading entries in Firestore
+        db.collection("readingEntries")
+                .whereEqualTo("userId", userId)
+                .whereEqualTo("completed", true)
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+
+                    // Clear the current list before loading books
+                    latestReadsList.clear();
+
+                    // If there are no completed books, refresh the RecyclerView
+                    if (querySnapshot.isEmpty()) {
+                        profileCompletedBooksAdapter.notifyDataSetChanged();
+                        return;
+                    }
+
+                    // Go through each completed reading entry
+                    for (com.google.firebase.firestore.DocumentSnapshot entry
+                            : querySnapshot.getDocuments()) {
+
+                        // Get the ID of the linked book reference
+                        String bookRefId = entry.getString("bookRefId");
+
+                        // Skip entries without a linked book reference
+                        if (bookRefId == null || bookRefId.isEmpty()) {
+                            continue;
+                        }
+
+                        // Load the book details from the bookReferences collection
+                        db.collection("bookReferences")
+                                .document(bookRefId)
+                                .get()
+                                .addOnSuccessListener(bookDoc -> {
+
+                                    // Check that the book document exists
+                                    if (!bookDoc.exists()) {
+                                        return;
+                                    }
+
+                                    // Read the book details from Firestore
+                                    String title = bookDoc.getString("title");
+                                    String author = bookDoc.getString("author");
+                                    String coverUrl = bookDoc.getString("coverUrl");
+                                    String externalBookId = bookDoc.getString("externalBookId");
+
+                                    // Create a CurrentBook using the reading entry's document ID
+                                    CurrentBook book = new CurrentBook(
+                                            entry.getId(),
+                                            title,
+                                            author,
+                                            coverUrl,
+                                            100,
+                                            externalBookId
+                                    );
+
+                                    // Add the completed book to the list
+                                    latestReadsList.add(book);
+
+                                    // Refresh the RecyclerView to display its cover
+                                    profileCompletedBooksAdapter.notifyDataSetChanged();
+                                });
+                    }
+                })
+                .addOnFailureListener(e -> {
+
+                    // Show a message if completed books cannot be loaded
+                    Toast.makeText(
+                            ProfileActivity.this,
+                            "Could not load completed books",
+                            Toast.LENGTH_SHORT
+                    ).show();
+                });
+    }
+
 }

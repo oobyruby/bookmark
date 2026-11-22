@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="horizontal"
     android:gravity="center_vertical"
     android:padding="12dp"
@@ -58,6 +59,7 @@
             android:layout_width="29dp"
             android:layout_height="29dp"
             android:src="@drawable/bookmark"
+            app:tint="#BCA9CC"
             android:contentDescription="Favourite" />
 
         <ImageButton
@@ -68,6 +70,7 @@
             android:scaleType="fitCenter"
             android:background="@android:color/transparent"
             android:src="@drawable/verticaldots"
+            app:tint="#BCA9CC"
             android:contentDescription="Book options" />
 
     </LinearLayout>

@@ -1,5 +1,10 @@
 package uws.ac.uk.bookmark;
 
+import android.graphics.Color;
+import android.view.View;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -13,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.ViewCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
@@ -23,6 +29,40 @@ public class ToBeRead extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.toberead);
+        // Match the Android system bars to the purple theme
+        getWindow().setStatusBarColor(Color.parseColor("#BCA9CC"));
+        getWindow().setNavigationBarColor(Color.parseColor("#BCA9CC"));
+        getWindow().setNavigationBarContrastEnforced(false);
+
+// Use dark status bar icons
+        getWindow().getDecorView().setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+        );
+
+// Keep the layout clear of the system bars
+        View root = findViewById(android.R.id.content);
+
+        root.setBackgroundColor(Color.parseColor("#BCA9CC"));
+
+        ViewCompat.setOnApplyWindowInsetsListener(root, (view, insets) -> {
+            Insets systemBars = insets.getInsets(
+                    WindowInsetsCompat.Type.systemBars()
+                            | WindowInsetsCompat.Type.displayCutout()
+            );
+
+            view.setPadding(
+                    systemBars.left,
+                    systemBars.top,
+                    systemBars.right,
+                    systemBars.bottom
+            );
+
+            return insets;
+        });
+
+        ViewCompat.requestApplyInsets(root);
+        // Make the status bar purple to match the header
+
         ImageButton navHome = findViewById(R.id.navHome);
         ImageButton navExplore = findViewById(R.id.navExplore);
         ImageButton navMap = findViewById(R.id.navMap);
@@ -142,6 +182,8 @@ public class ToBeRead extends AppCompatActivity {
                                                     String title = "Book details unavailable";
                                                     String authors = "Author details unavailable";
                                                     String coverUrl = "";
+                                                    // Store the Google Books ID for this book
+                                                    String externalBookId = "";
 
                                                     if (task.isSuccessful()) {
 
@@ -158,6 +200,9 @@ public class ToBeRead extends AppCompatActivity {
 
                                                             String savedCover =
                                                                     bookReference.getString("coverUrl");
+                                                            // Get the Google Books ID saved in Firestore
+                                                            externalBookId =
+                                                                    bookReference.getString("externalBookId");
 
                                                             if (savedTitle != null && !savedTitle.isEmpty()) {
                                                                 title = savedTitle;
@@ -184,7 +229,8 @@ public class ToBeRead extends AppCompatActivity {
                                                             title,
                                                             authors,
                                                             coverUrl,
-                                                            progressPercent
+                                                            progressPercent,
+                                                            externalBookId
                                                     );
 
                                                     // Add the book to the list

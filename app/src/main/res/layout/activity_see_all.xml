@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#FFFFFF">
+
+    <!-- See All header -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:background="@color/top_purple">
+
+        <!-- Back arrow on the left -->
+        <TextView
+            android:id="@+id/backButton"
+            android:layout_width="48dp"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="‹"
+            android:textSize="32sp"
+            android:textColor="#FFFFFF"
+            android:clickable="true"
+            android:focusable="true"
+            android:contentDescription="Go back" />
+
+        <!-- Centred title -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="See All"
+            android:textColor="#FFFFFF"
+            android:textSize="22sp" />
+
+    </FrameLayout>
+
+    <!-- Completed books list -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/completedBooksRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:padding="12dp"
+        android:clipToPadding="false" />
+
+    <!-- Empty message -->
+    <TextView
+        android:id="@+id/emptyCompletedBooks"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Your completed books will appear here."
+        android:textSize="15sp"
+        android:textColor="#777777"
+        android:gravity="center"
+        android:padding="24dp"
+        android:visibility="gone" />
+
+    <!-- Existing bottom navigation -->
+    <include layout="@layout/bottom_navigation" />
+
+</LinearLayout>

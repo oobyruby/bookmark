@@ -18,6 +18,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.List;
+import android.graphics.Color;
+import android.view.View;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 public class CurrentReading extends AppCompatActivity {
 
@@ -25,6 +30,38 @@ public class CurrentReading extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_current);
+        // Match the Android system bars to the purple theme
+        getWindow().setStatusBarColor(Color.parseColor("#BCA9CC"));
+        getWindow().setNavigationBarColor(Color.parseColor("#BCA9CC"));
+        getWindow().setNavigationBarContrastEnforced(false);
+
+// Use dark status bar icons
+        getWindow().getDecorView().setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+        );
+
+// Keep the layout clear of the system bars
+        View root = findViewById(android.R.id.content);
+
+        root.setBackgroundColor(Color.parseColor("#BCA9CC"));
+
+        ViewCompat.setOnApplyWindowInsetsListener(root, (view, insets) -> {
+            Insets systemBars = insets.getInsets(
+                    WindowInsetsCompat.Type.systemBars()
+                            | WindowInsetsCompat.Type.displayCutout()
+            );
+
+            view.setPadding(
+                    systemBars.left,
+                    systemBars.top,
+                    systemBars.right,
+                    systemBars.bottom
+            );
+
+            return insets;
+        });
+
+        ViewCompat.requestApplyInsets(root);
         // Connect the bottom navigation buttons
         ImageButton navHome = findViewById(R.id.navHome);
         ImageButton navExplore = findViewById(R.id.navExplore);
@@ -135,6 +172,8 @@ public class CurrentReading extends AppCompatActivity {
                                                 String title = "Book details unavailable";
                                                 String authors = "Author details unavailable";
                                                 String coverUrl = "";
+                                                // Store the Google Books ID for this book
+                                                String externalBookId = "";
 
                                                 if (task.isSuccessful()) {
 
@@ -151,6 +190,9 @@ public class CurrentReading extends AppCompatActivity {
 
                                                         String savedCover =
                                                                 bookReference.getString("coverUrl");
+                                                        // Get the Google Books ID saved in Firestore
+                                                         externalBookId =
+                                                                bookReference.getString("externalBookId");
 
                                                         if (savedTitle != null && !savedTitle.isEmpty()) {
                                                             title = savedTitle;
@@ -177,7 +219,9 @@ public class CurrentReading extends AppCompatActivity {
                                                         title,
                                                         authors,
                                                         coverUrl,
-                                                        processPercent
+                                                        processPercent,
+                                                        externalBookId
+
                                                 );
                                                 //add this book to the list
                                                 bookList.add(book);
