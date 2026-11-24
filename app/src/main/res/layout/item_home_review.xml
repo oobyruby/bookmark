@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- individual review card -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/reviewCard"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="8dp"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:background="@drawable/profile_list_background"
+    android:padding="10dp">
+
+    <!-- reviewer's profile picture -->
+    <ImageView
+        android:id="@+id/reviewProfileImage"
+        android:layout_width="38dp"
+        android:layout_height="38dp"
+        android:background="@drawable/book_back_background"
+        android:src="@drawable/ic_profile"
+        android:scaleType="centerCrop"
+        android:contentDescription="reviewer profile" />
+
+    <!-- review information -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/reviewUsername"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#44374D"
+            android:textSize="12sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/reviewStars"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#AD94C0"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/reviewDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:textColor="#888888"
+                android:textSize="9sp" />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/reviewBookTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="3dp"
+            android:textColor="#826B94"
+            android:textSize="11sp" />
+
+        <TextView
+            android:id="@+id/reviewComment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textColor="#666666"
+            android:textSize="11sp"
+            android:maxLines="3"
+            android:ellipsize="end" />
+
+    </LinearLayout>
+
+    <!-- reviewed book cover -->
+    <ImageView
+        android:id="@+id/reviewBookCover"
+        android:layout_width="48dp"
+        android:layout_height="72dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/genre_tile_background"
+        android:contentDescription="reviewed book cover" />
+
+</LinearLayout>

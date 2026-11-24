@@ -228,45 +228,41 @@
                 android:clipToPadding="false"
                 android:overScrollMode="never" />
 
-            <!-- latest reviews -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="8dp">
+    <!-- latest reviews -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="8dp">
 
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="▣ latest reviews"
-                    android:textColor="#333333"
-                    android:textSize="14sp" />
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="▣ latest reviews"
+            android:textColor="#333333"
+            android:textSize="14sp" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="see all ›"
-                    android:textColor="#444444"
-                    android:textSize="10sp" />
+        <TextView
+            android:id="@+id/seeAllReviews"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="see all ›"
+            android:textColor="#444444"
+            android:textSize="10sp"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="4dp" />
 
-            </LinearLayout>
+    </LinearLayout>
 
-            <FrameLayout
-                android:layout_width="match_parent"
-                android:layout_height="75dp"
-                android:background="#F4F0F7">
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:gravity="center"
-                    android:text="latest reviews will appear here"
-                    android:textColor="#8A7B92"
-                    android:textSize="12sp" />
-
-            </FrameLayout>
+    <!-- display the three most recent app reviews -->
+    <LinearLayout
+        android:id="@+id/homeReviewsContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" />
 
         </LinearLayout>
 

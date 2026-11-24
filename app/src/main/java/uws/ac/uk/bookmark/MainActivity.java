@@ -41,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
 
     private NYTBooksService nytBooksService;
     private GoogleBooksService googleBooksService;
+    private LatestReviewsFeed latestReviewsFeed;
 
 
     // ambient light sensor and theme settings
@@ -144,8 +145,20 @@ public class MainActivity extends AppCompatActivity {
         setupNewReleases();
         setupStephenKingCollection();
         setupAllTimeFavourites();
-
+        setupLatestReviews();
         setupAmbientLightSensor();
+    }
+
+    // initialise the latest reviews section
+    private void setupLatestReviews() {
+
+        LinearLayout reviewsContainer =
+                findViewById(R.id.homeReviewsContainer);
+
+        latestReviewsFeed = new LatestReviewsFeed(
+                this,
+                reviewsContainer
+        );
     }
 
     // retrieve stephen king books separately from the other collections
@@ -362,6 +375,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupSeeAllButtons() {
+
         findViewById(R.id.seeAllTrending).setOnClickListener(v ->
                 openBookList("trending books", trendingBooks));
 
@@ -373,6 +387,12 @@ public class MainActivity extends AppCompatActivity {
 
         findViewById(R.id.seeAllFavourites).setOnClickListener(v ->
                 openBookList("all-time favourites", favouriteBooks));
+
+        findViewById(R.id.seeAllReviews).setOnClickListener(v ->
+                startActivity(new Intent(
+                        this,
+                        LatestReviewsActivity.class
+                )));
     }
 
     private void openBookList(String section, ArrayList<Book> books) {
@@ -915,8 +935,10 @@ public class MainActivity extends AppCompatActivity {
             // change section headings and see all labels
             updateHomeTextColours(mainLayout);
 
-            // change the latest reviews placeholder
-            updateReviewsPanel(mainLayout, true);
+            // apply the dark theme to the latest reviews
+            if (latestReviewsFeed != null) {
+                latestReviewsFeed.setDarkMode(true);
+            }
 
             Log.d(
                     "AmbientLight",
@@ -954,8 +976,10 @@ public class MainActivity extends AppCompatActivity {
                 entry.getKey().setTextColor(entry.getValue());
             }
 
-            // restore the latest reviews placeholder
-            updateReviewsPanel(mainLayout, false);
+            // restore the light theme of the latest reviews
+            if (latestReviewsFeed != null) {
+                latestReviewsFeed.setDarkMode(false);
+            }
 
             Log.d(
                     "AmbientLight",
@@ -1065,6 +1089,11 @@ public class MainActivity extends AppCompatActivity {
         if (ambientLightHelper != null) {
             ambientLightHelper.start();
         }
+
+        // retrieve the three most recent reviews
+        if (latestReviewsFeed != null) {
+            latestReviewsFeed.loadReviews(3);
+        }
     }
 
     // stop listening when the homepage is no longer active
@@ -1075,9 +1104,12 @@ public class MainActivity extends AppCompatActivity {
             ambientLightHelper.stop();
         }
 
+        if (latestReviewsFeed != null) {
+            latestReviewsFeed.stopListening();
+        }
+
         super.onPause();
     }
-
 
     @Override
     protected void onDestroy() {
@@ -1089,6 +1121,10 @@ public class MainActivity extends AppCompatActivity {
 
         if (googleBooksService != null) {
             googleBooksService.shutdown();
+        }
+
+        if (latestReviewsFeed != null) {
+            latestReviewsFeed.shutdown();
         }
     }
 }
