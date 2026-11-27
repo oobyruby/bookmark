@@ -1,3 +1,4 @@
+
 package uws.ac.uk.bookmark;
 
 import android.content.Intent;
@@ -25,6 +26,12 @@ public class SearchResultsActivity extends AppCompatActivity {
     private SearchResultsAdapter resultsAdapter;
     private ProgressBar resultsProgress;
     private TextView resultsStatus;
+    private View resultsLoadMore;
+    private String[][] popularBookSelections;
+    private String popularBookSource;
+    private final ArrayList<Book> popularBooks = new ArrayList<>();
+    private int popularBooksRequested = 0;
+    private boolean loadingPopularBooks = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,7 +41,10 @@ public class SearchResultsActivity extends AppCompatActivity {
         // match the android system bars to the bookmark theme
         getWindow().setStatusBarColor(Color.parseColor("#BCA9CC"));
         getWindow().setNavigationBarColor(Color.parseColor("#BCA9CC"));
-        getWindow().setNavigationBarContrastEnforced(false);
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+            getWindow().setNavigationBarContrastEnforced(false);
+        }
 
         // use dark status bar icons
         getWindow().getDecorView().setSystemUiVisibility(
@@ -69,6 +79,8 @@ public class SearchResultsActivity extends AppCompatActivity {
         TextView resultsTitle = findViewById(R.id.resultsTitle);
         resultsProgress = findViewById(R.id.resultsProgress);
         resultsStatus = findViewById(R.id.resultsStatus);
+        resultsLoadMore = findViewById(R.id.resultsLoadMore);
+        resultsLoadMore.setOnClickListener(v -> loadMorePopularBooks());
 
         RecyclerView resultsRecyclerView =
                 findViewById(R.id.resultsRecyclerView);
@@ -178,14 +190,19 @@ public class SearchResultsActivity extends AppCompatActivity {
 
                 resultsTitle.setText("most read this month");
 
-                source = "Goodreads - 15 November 2026";
+                source = "Goodreads - November 2026";
 
                 selectedBooks = new String[][]{
                         {"A Court of Splintered Harmony", "Sarah J. Maas"},
                         {"The Witch", "Freida McFadden"},
                         {"Threshing Day", "Rebecca Yarros"},
                         {"Yesteryear", "Caro Claire Burke"},
-                        {"The Calamity Club", "Kathryn Stockett"}
+                        {"The Calamity Club", "Kathryn Stockett"},
+                        {"Project Hail Mary", "Andy Weir"},
+                        {"Mad Mabel", "Sally Hepworth"},
+                        {"Whistler", "Ann Patchett"},
+                        {"Dear Debbie", "Freida McFadden"},
+                        {"The Housemaid", "Freida McFadden"}
                 };
 
                 break;
@@ -194,14 +211,19 @@ public class SearchResultsActivity extends AppCompatActivity {
 
                 resultsTitle.setText("booktok favourites");
 
-                source = "Bookshop UK - BookTok selection";
+                source = "BookTok - bookseller selections";
 
                 selectedBooks = new String[][]{
                         {"Fourth Wing", "Rebecca Yarros"},
                         {"A Court of Thorns and Roses", "Sarah J. Maas"},
                         {"Verity", "Colleen Hoover"},
                         {"The Seven Husbands of Evelyn Hugo", "Taylor Jenkins Reid"},
-                        {"The Song of Achilles", "Madeline Miller"}
+                        {"The Song of Achilles", "Madeline Miller"},
+                        {"Icebreaker", "Hannah Grace"},
+                        {"Heated Rivalry", "Rachel Reid"},
+                        {"Binding 13", "Chloe Walsh"},
+                        {"Alchemised", "SenLinYu"},
+                        {"Powerless", "Lauren Roberts"}
                 };
 
                 break;
@@ -210,14 +232,19 @@ public class SearchResultsActivity extends AppCompatActivity {
 
                 resultsTitle.setText("award winners");
 
-                source = "Booker Prize winners - 2021 to 2025";
+                source = "Booker Prize winners - 2016 to 2025";
 
                 selectedBooks = new String[][]{
                         {"Flesh", "David Szalay"},
                         {"Orbital", "Samantha Harvey"},
                         {"Prophet Song", "Paul Lynch"},
                         {"The Seven Moons of Maali Almeida", "Shehan Karunatilaka"},
-                        {"The Promise", "Damon Galgut"}
+                        {"The Promise", "Damon Galgut"},
+                        {"Shuggie Bain", "Douglas Stuart"},
+                        {"Girl, Woman, Other", "Bernardine Evaristo"},
+                        {"Milkman", "Anna Burns"},
+                        {"Lincoln in the Bardo", "George Saunders"},
+                        {"The Sellout", "Paul Beatty"}
                 };
 
                 break;
@@ -228,17 +255,42 @@ public class SearchResultsActivity extends AppCompatActivity {
                 return;
         }
 
+        popularBookSelections = selectedBooks;
+        popularBookSource = source;
+        popularBooks.clear();
+        popularBooksRequested = 0;
+
+        loadMorePopularBooks();
+    }
+
+    private void loadMorePopularBooks() {
+
+        if (loadingPopularBooks || popularBookSelections == null
+                || popularBooksRequested >= popularBookSelections.length) {
+            return;
+        }
+
+        loadingPopularBooks = true;
+        resultsLoadMore.setVisibility(View.GONE);
         resultsProgress.setVisibility(View.VISIBLE);
 
-        resultsStatus.setText("Loading books...\n" + source);
+        resultsStatus.setText(
+                (popularBooksRequested == 0
+                        ? "Loading books...\n"
+                        : "Loading more books...\n")
+                        + popularBookSource);
 
-        ArrayList<Book> popularBooks = new ArrayList<>();
+        int endIndex = Math.min(
+                popularBooksRequested + 5,
+                popularBookSelections.length
+        );
 
         loadPopularBook(
-                selectedBooks,
-                0,
+                popularBookSelections,
+                popularBooksRequested,
+                endIndex,
                 popularBooks,
-                source
+                popularBookSource
         );
     }
 
@@ -246,6 +298,7 @@ public class SearchResultsActivity extends AppCompatActivity {
     private void loadPopularBook(
             String[][] selectedBooks,
             int index,
+            int endIndex,
             ArrayList<Book> popularBooks,
             String source) {
 
@@ -254,9 +307,14 @@ public class SearchResultsActivity extends AppCompatActivity {
         }
 
         // Check whether all selected books have been requested
-        if (index >= selectedBooks.length) {
+        if (index >= endIndex) {
 
+            popularBooksRequested = endIndex;
+            loadingPopularBooks = false;
             resultsProgress.setVisibility(View.GONE);
+            resultsLoadMore.setVisibility(
+                    popularBooksRequested < selectedBooks.length
+                            ? View.VISIBLE : View.GONE);
 
             if (popularBooks.isEmpty()) {
 
@@ -267,7 +325,7 @@ public class SearchResultsActivity extends AppCompatActivity {
 
                 resultsStatus.setText(
                         "Books found: " + popularBooks.size()
-                                + " of " + selectedBooks.length
+                                + " of " + popularBooksRequested
                                 + "\n" + source);
             }
 
@@ -317,6 +375,7 @@ public class SearchResultsActivity extends AppCompatActivity {
                         loadPopularBook(
                                 selectedBooks,
                                 index + 1,
+                                endIndex,
                                 popularBooks,
                                 source
                         );
@@ -333,6 +392,7 @@ public class SearchResultsActivity extends AppCompatActivity {
                         loadPopularBook(
                                 selectedBooks,
                                 index + 1,
+                                endIndex,
                                 popularBooks,
                                 source
                         );

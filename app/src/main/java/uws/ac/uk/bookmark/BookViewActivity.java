@@ -266,25 +266,11 @@ public class BookViewActivity extends AppCompatActivity {
                 ));
 
         // Open the currently reading page
-        currentlyReadingButton.setOnClickListener(v -> {
-
-            if (FirebaseAuth.getInstance().getCurrentUser() == null) {
-                Toast.makeText(
-                        BookViewActivity.this,
-                        "Please log in first",
-                        Toast.LENGTH_SHORT
-                ).show();
-
-                return;
-            }
-
-            Intent readingIntent = new Intent(
-                    BookViewActivity.this,
-                    CurrentReading.class
-            );
-
-            startActivity(readingIntent);
-        });
+        currentlyReadingButton.setOnClickListener(v ->
+                addBookToShelf(
+                        selectedBook,
+                        "currently reading"
+                ));
 
         // Open the review dialog when a star rating is selected
         bookReviewRating.setOnRatingBarChangeListener(
@@ -372,6 +358,15 @@ public class BookViewActivity extends AppCompatActivity {
                             "Book added to your " + readingList + " list",
                             Toast.LENGTH_SHORT
                     ).show();
+
+                    if ("currently reading".equals(readingList)) {
+                        Intent readingIntent = new Intent(
+                                BookViewActivity.this,
+                                CurrentReading.class
+                        );
+
+                        startActivity(readingIntent);
+                    }
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(

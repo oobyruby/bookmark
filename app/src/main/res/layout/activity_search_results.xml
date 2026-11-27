@@ -61,6 +61,19 @@
         android:layout_weight="1"
         android:padding="8dp" />
 
+    <Button
+        android:id="@+id/resultsLoadMore"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginBottom="8dp"
+        android:backgroundTint="#BCA9CC"
+        android:text="load more"
+        android:textColor="#FFFFFF"
+        android:textAllCaps="false"
+        android:visibility="gone" />
+
     <!-- Existing bottom navigation -->
     <include layout="@layout/bottom_navigation" />
 
